@@ -1,0 +1,31 @@
+# ── Credenciales y configuración local ──────────────────────────
+# Este archivo contiene tu token de GitHub y NUNCA debe subirse al repositorio
+scripts/.github_config
+
+# ── Python ───────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── Entornos virtuales ───────────────────────────────────────────
+env/
+venv/
+.env/
+.venv/
+
+# ── Sistema operativo ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDEs ─────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace

@@ -1,0 +1,77 @@
+# =============================================================================
+# Scraper Automático de Loterías — GitHub Actions
+# =============================================================================
+# Horario: cada hora a los :12 minutos
+#   8:12 AM VET  → 12:12 UTC
+#   9:12 AM VET  → 13:12 UTC
+#  10:12 AM VET  → 14:12 UTC
+#  11:12 AM VET  → 15:12 UTC
+#  12:12 PM VET  → 16:12 UTC
+#   1:12 PM VET  → 17:12 UTC
+#   2:12 PM VET  → 18:12 UTC
+#   3:12 PM VET  → 19:12 UTC
+#   4:12 PM VET  → 20:12 UTC
+#   5:12 PM VET  → 21:12 UTC
+#   6:12 PM VET  → 22:12 UTC
+#   7:12 PM VET  → 23:12 UTC
+# =============================================================================
+
+name: 🎰 Scraper Automático de Loterías
+
+on:
+  schedule:
+    # Cada hora a los :12 minutos, de 12:00 a 23:00 UTC
+    # (equivale a 8:12 AM – 7:12 PM hora Venezuela UTC-4)
+    - cron: '12 12-23 * * *'
+
+  # Permite ejecutarlo manualmente desde GitHub → Actions → Run workflow
+  workflow_dispatch:
+    inputs:
+      motivo:
+        description: 'Motivo de la ejecución manual (opcional)'
+        required: false
+        default: 'Ejecución manual'
+
+jobs:
+  scrape-loterias:
+    name: Descargar y subir resultados
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Descargar el código del repositorio
+      - name: 📥 Checkout del repositorio
+        uses: actions/checkout@v4
+
+      # 2. Instalar Python 3.11
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # 3. Instalar dependencias
+      - name: 📦 Instalar dependencias
+        run: pip install requests beautifulsoup4
+
+      # 4. Crear la carpeta data/ si no existe
+      - name: 📁 Crear carpeta data/
+        run: mkdir -p data
+
+      # 5. Ejecutar el scraper en modo automático
+      #    GITHUB_TOKEN es inyectado automáticamente por GitHub Actions
+      #    GH_REPO es el repositorio donde se suben los archivos JSON
+      - name: 🔄 Ejecutar scraper (todas las loterías)
+        env:
+          GITHUB_TOKEN: ${{ secrets.SCRAPER_TOKEN }}
+          GH_REPO: Arafel-1/lotto-data
+        run: python scripts/scraper.py --auto
+
+      # 6. Mostrar los archivos descargados (para verificación en los logs)
+      - name: 📊 Verificar archivos generados
+        run: |
+          echo "=== Archivos en data/ ==="
+          ls -lh data/ 2>/dev/null || echo "No se generaron archivos."
+          echo ""
+          echo "=== Hora de ejecución ==="
+          echo "UTC: $(date -u)"
+          echo "VET (UTC-4): $(TZ='America/Caracas' date)"
