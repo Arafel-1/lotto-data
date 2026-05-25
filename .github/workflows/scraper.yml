@@ -61,7 +61,7 @@ jobs:
       #    GH_REPO es el repositorio donde se suben los archivos JSON
       - name: 🔄 Ejecutar scraper (todas las loterías)
         env:
-          GITHUB_TOKEN: ${{ secrets.SCRAPER_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: Arafel-1/lotto-data
         run: python scripts/scraper.py --auto
 
