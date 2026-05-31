@@ -2298,15 +2298,17 @@ async function analyzePatterns() {
     container.innerHTML =
         '<div class="analyzing-loader">' +
         '<div class="spinner"></div>' +
-        '<p>Analizando 60 d&#237;as antes de ' + label + '...</p>' +
+        '<p>Analizando ' + (currentAppType === 'extendida' ? 90 : 60) + ' d&#237;as antes de ' + label + '...</p>' +
         '</div>';
 
     await new Promise(function(r) { setTimeout(r, 50); });
 
     try {
         var patternDays = currentAppType === 'extendida' ? 90 : 60;
-        cachedPatterns = await findPatternsAsync(patternDays, 5, refDate);
-        renderPatterns(cachedPatterns, refDate);
+        var minFreq = currentAppType === 'extendida' ? 5 : 5;
+        var patternSizes = currentAppType === 'extendida' ? [2] : [5, 4, 3];
+        cachedPatterns = await findPatternsAsync(patternDays, minFreq, patternSizes, refDate);
+        renderPatterns(cachedPatterns, refDate, patternDays, minFreq);
     } catch (e) {
         console.error(e);
         container.innerHTML = '<p style="color: var(--danger)">Error al analizar: ' + e.message + '</p>';
@@ -2314,9 +2316,9 @@ async function analyzePatterns() {
 }
 
 
-async function findPatternsAsync(daysToAnalyze, minFrequency, refDate) {
+async function findPatternsAsync(daysToAnalyze, minFrequency, sizesToAnalyze, refDate) {
     // Usar refDate como extremo FINAL del an&#225;lisis (fecha seleccionada).
-    // Se analizan los 60 d&#237;as ANTES de esa fecha, excluy&#233;ndola.
+    // Se analizan los d&#237;as indicados ANTES de esa fecha, excluy&#233;ndola.
     var refStr    = refDate || currentDate;
     var refD      = new Date(refStr + 'T12:00:00');
     var cutoff    = new Date(refD);
@@ -2328,18 +2330,19 @@ async function findPatternsAsync(daysToAnalyze, minFrequency, refDate) {
         return dateStr >= cutoffStr && dateStr < refStr;
     });
 
+    const minSize = Math.min(...sizesToAnalyze);
     const rawData = datesToAnalyze.map(date => {
         const hours = db[date];
         const uniqueNumbers = new Set(Object.values(hours).filter(v => v && v.trim() !== ''));
         // Use numerical sort for consistency (e.g., '2' comes before '10')
         return { date, numbers: Array.from(uniqueNumbers).sort((a, b) => parseInt(a) - parseInt(b)) };
     })
-    .filter(day => day.numbers.length >= 3); // Minimal valuable pattern size is 3
+    .filter(day => day.numbers.length >= minSize); // Minimal valuable pattern size
 
     if (rawData.length === 0) return [];
 
     const patternCounts = new Map(); // Key: "num,num", Value: {count, dates, numbers}
-    const SIZES = [5, 4, 3]; // Order doesn't strictly matter for correctness, but we check all
+    const SIZES = sizesToAnalyze; // Dynamic sizes
 
     // 2. Process in Chunks (Avoid UI Freeze)
     const CHUNK_SIZE = 5; // Process 5 days per "tick"
@@ -2402,12 +2405,12 @@ function getCombinations(arr, k) {
     return results;
 }
 
-function renderPatterns(patterns, refDate) {
+function renderPatterns(patterns, refDate, patternDays, minFreq) {
     const container = document.getElementById('patterns-container');
     if (patterns.length === 0) {
         container.innerHTML = `
             <div class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 3rem;">
-                <p>No se encontraron patrones con m&#225;s de 5 repeticiones en los 60 d&#237;as anteriores a la fecha seleccionada.</p>
+                <p>No se encontraron patrones con ${minFreq} o m&#225;s repeticiones en los ${patternDays} d&#237;as anteriores a la fecha seleccionada.</p>
             </div>
         `;
         return;
@@ -2451,7 +2454,7 @@ function renderPatterns(patterns, refDate) {
             '</div>';
     }
 
-    var refInfo = '<div class="pattern-ref-date">&#128336; Patrones calculados con los 60 d&#237;as anteriores al ' + dateLabel + '</div>';
+    var refInfo = '<div class="pattern-ref-date">&#128336; Patrones calculados con los ' + patternDays + ' d&#237;as anteriores al ' + dateLabel + '</div>';
 
     container.innerHTML = refInfo + bannerHTML + withStatus.map(function(p, index) {
         var animalNums = p.numbers.map(function(n) {
