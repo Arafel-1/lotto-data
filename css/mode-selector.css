@@ -1,0 +1,111 @@
+﻿/* Mode Selector Styles */
+.mode-selector {
+    display: flex;
+    align-items: center;
+}
+
+.mode-dropdown {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.mode-dropdown:hover {
+    border-color: var(--accent);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.mode-dropdown:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.mode-dropdown option {
+    background: var(--bg);
+    color: var(--text-primary);
+    padding: 0.5rem;
+}
+
+/* ── Custom Mode Dropdown (compatible con Windows 7 / browsers antiguos) ── */
+.custom-mode-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.mode-btn:hover {
+    border-color: var(--accent);
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.mode-btn-arrow {
+    font-size: 0.7rem;
+    opacity: 0.6;
+    transition: transform 0.2s;
+}
+
+.custom-mode-dropdown.open .mode-btn-arrow {
+    transform: rotate(180deg);
+}
+
+.mode-options {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 140px;
+    background: #1e1b4b;
+    border: 1px solid rgba(139,92,246,0.4);
+    border-radius: 0.6rem;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    z-index: 9999;
+}
+
+.custom-mode-dropdown.open .mode-options {
+    display: block;
+}
+
+.mode-option {
+    padding: 0.6rem 1rem;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.mode-option:hover {
+    background: rgba(139, 92, 246, 0.25);
+    color: #c4b5fd;
+}
+
+.mode-option.active {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+}

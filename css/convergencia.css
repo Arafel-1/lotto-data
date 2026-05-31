@@ -1,0 +1,191 @@
+/* =============================================
+   Panel de Convergencia de Señales
+   Lottery Tracker Pro v1.0.19
+   ============================================= */
+
+.convergencia-wrapper {
+    margin: 1.25rem 0 1rem;
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+}
+
+.convergencia-title {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+}
+
+.convergencia-title span {
+    font-size: 0.88rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-primary);
+}
+
+.convergencia-title small {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.convergencia-panel {
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ── Tiers ─────────────────────────────────── */
+.conv-tier {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+}
+.conv-tier:last-child { border-bottom: none; }
+
+.conv-tier-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+}
+
+.conv-tier-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.conv-tier-label {
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex: 1;
+}
+
+.conv-tier-count {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.1rem 0.55rem;
+    border-radius: 2rem;
+    opacity: 0.9;
+}
+
+.conv-tier-desc {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.65rem;
+    line-height: 1.4;
+}
+
+.conv-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+/* ── Chips ─────────────────────────────────── */
+.conv-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 2rem;
+    border: 1px solid transparent;
+    cursor: default;
+    transition: transform 0.1s;
+}
+.conv-chip:hover { transform: scale(1.05); }
+
+.conv-chip-num {
+    font-size: 0.95rem;
+    font-weight: 800;
+    font-family: 'Courier New', monospace;
+}
+
+.conv-chip-name {
+    font-size: 0.68rem;
+    font-weight: 600;
+    opacity: 0.85;
+}
+
+/* Triple — dorado premium */
+.tier-triple {
+    background: linear-gradient(135deg, rgba(251,191,36,0.07) 0%, rgba(239,68,68,0.05) 100%);
+}
+.tier-triple .conv-tier-label { color: #fbbf24; }
+.tier-triple .conv-tier-count {
+    background: rgba(251,191,36,0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(251,191,36,0.3);
+}
+.conv-chip.tier-triple {
+    background: rgba(251,191,36,0.15);
+    border-color: rgba(251,191,36,0.4);
+    color: #fcd34d;
+    box-shadow: 0 0 8px rgba(251,191,36,0.15);
+}
+
+/* Fecha + Asociados — azul/violeta */
+.tier-asoc {
+    background: rgba(139,92,246,0.04);
+}
+.tier-asoc .conv-tier-label { color: #a78bfa; }
+.tier-asoc .conv-tier-count {
+    background: rgba(139,92,246,0.15);
+    color: #a78bfa;
+    border: 1px solid rgba(139,92,246,0.3);
+}
+.conv-chip.tier-asoc {
+    background: rgba(139,92,246,0.12);
+    border-color: rgba(139,92,246,0.35);
+    color: #c4b5fd;
+}
+
+/* Fecha + Patrón — verde esmeralda */
+.tier-pat {
+    background: rgba(16,185,129,0.04);
+}
+.tier-pat .conv-tier-label { color: #34d399; }
+.tier-pat .conv-tier-count {
+    background: rgba(16,185,129,0.15);
+    color: #34d399;
+    border: 1px solid rgba(16,185,129,0.3);
+}
+.conv-chip.tier-pat {
+    background: rgba(16,185,129,0.12);
+    border-color: rgba(16,185,129,0.35);
+    color: #6ee7b7;
+}
+
+/* Estado vacío */
+.conv-empty {
+    display: block;
+    padding: 0.85rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+.conv-empty strong { color: var(--text-primary); }
+
+/* Asociados + Patrón — naranja coral */
+.tier-asoc-pat {
+    background: rgba(249,115,22,0.04);
+}
+.tier-asoc-pat .conv-tier-label { color: #fb923c; }
+.tier-asoc-pat .conv-tier-count {
+    background: rgba(249,115,22,0.15);
+    color: #fb923c;
+    border: 1px solid rgba(249,115,22,0.3);
+}
+.conv-chip.tier-asoc-pat {
+    background: rgba(249,115,22,0.12);
+    border-color: rgba(249,115,22,0.35);
+    color: #fdba74;
+}

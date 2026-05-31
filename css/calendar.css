@@ -1,0 +1,239 @@
+/* =============================================
+   Calendario Flotante - Lottery Tracker Pro
+   Compatible con Chrome antiguo / Windows 7
+   ============================================= */
+
+/* Contenedor del selector de fecha personalizado */
+.custom-date-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* Botón que muestra la fecha actual y abre el calendario */
+#date-display-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 1.1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    min-width: 190px;
+    user-select: none;
+}
+
+#date-display-btn:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+#date-display-btn.cal-open {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.date-btn-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+/* Popover del calendario */
+.cal-popover {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 9999;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    padding: 1rem;
+    min-width: 280px;
+    animation: calFadeIn 0.15s ease;
+}
+
+.cal-popover.cal-visible {
+    display: block;
+}
+
+@keyframes calFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Cabecera del calendario: mes/año + flechas */
+.cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.cal-nav-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 0.4rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+    line-height: 1;
+}
+
+.cal-nav-btn:hover {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: var(--accent);
+}
+
+.cal-month-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: capitalize;
+    letter-spacing: 0.02em;
+}
+
+/* Grid de días de la semana */
+.cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 0.25rem;
+}
+
+.cal-weekday {
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    padding: 0.2rem 0;
+}
+
+/* Grid de días */
+.cal-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+}
+
+.cal-day {
+    text-align: center;
+    padding: 0.42rem 0;
+    border-radius: 0.4rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: background 0.12s, color 0.12s;
+    border: 1px solid transparent;
+    position: relative;
+}
+
+.cal-day:hover {
+    background: rgba(59, 130, 246, 0.18);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Día vacío (espaciador) */
+.cal-day.empty {
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Día de otro mes */
+.cal-day.other-month {
+    color: rgba(148, 163, 184, 0.35);
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Día seleccionado actualmente */
+.cal-day.selected {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+}
+
+/* Día de hoy */
+.cal-day.today {
+    border-color: var(--success);
+    color: var(--success);
+    font-weight: 800;
+}
+
+.cal-day.today.selected {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+/* Dia con todos los datos registrados (completo) - punto VERDE */
+.cal-day.has-data-full::after {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--success);
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Dia con datos parciales (incompleto) - punto AMARILLO */
+.cal-day.has-data-partial::after {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #facc15;
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Botón "Hoy" */
+.cal-footer {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: center;
+}
+
+.cal-today-btn {
+    padding: 0.35rem 1.2rem;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    border-radius: 2rem;
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.cal-today-btn:hover {
+    background: rgba(59, 130, 246, 0.28);
+}
+
+/* Ocultar el input nativo (pero mantenerlo para compatibilidad con JS) */
+#entry-date {
+    display: none;
+}

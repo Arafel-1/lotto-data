@@ -1,0 +1,300 @@
+/* Strong Number Styles */
+.strong-number-container {
+    /* Container merely holds the section elements */
+    width: 100%;
+}
+
+.strong-grid {
+    display: flex;
+    gap: 1rem;
+    /* Scroll properties moved here */
+    overflow-x: auto;
+    width: 100%;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+
+    /* Enclosure visuals */
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    margin-bottom: 1rem;
+}
+
+.strong-column {
+    flex-shrink: 0;
+    /* Prevent columns from shrinking */
+    background: var(--card-bg);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    min-width: 100px;
+    display: flex;
+    flex-direction: column;
+}
+
+.strong-header {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.75rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.strong-time {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.strong-main-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.strong-list {
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.strong-item {
+    text-align: center;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.strong-item.highlight-purple {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.strong-item.highlight-match {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.strong-item.highlight-green {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+/* Summary Section Styles */
+.strong-summary-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.summary-field {
+    margin-bottom: 1rem;
+}
+
+.summary-field h4 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.summary-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.associate-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.3rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.associate-badge small {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+/* Frequency-based colors (for repeated associates) */
+.associate-badge.frequency-medium {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.associate-badge.frequency-medium small {
+    color: #c084fc;
+}
+
+.associate-badge.frequency-high {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.associate-badge.frequency-high small {
+    color: #4ade80;
+}
+
+/* Validation-based color (for validated associates - will be used in second field) */
+.associate-badge.validated {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+
+/* Toggle Switch Styles */
+
+.strong-header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.strong-header-controls h3 {
+    margin: 0;
+}
+
+.strong-search-wrapper {
+    position: relative;
+}
+
+.strong-search-wrapper input {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-primary);  /* FIX: was var(--text), which is undefined */
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    width: 150px;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.strong-search-wrapper input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    width: 180px;
+}
+
+.view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--card-bg);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    border: 1px solid var(--border);
+}
+
+.toggle-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* The Switch Box */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The Slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #3b82f6;
+    /* Blue for Prediction */
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+/* Checked state (Validation - Green) */
+input:checked+.slider {
+    background-color: #10b981;
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px #10b981;
+}
+
+input:checked+.slider:before {
+    -webkit-transform: translateX(24px);
+    -ms-transform: translateX(24px);
+    transform: translateX(24px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 24px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Highlight header match - Validation Mode */
+.strong-header.highlight-header-match {
+    background-color: rgba(34, 197, 94, 0.4);
+    /* Stronger green */
+    border: 2px solid #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+}
+
+.strong-header.highlight-header-match .strong-main-number {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.strong-header.highlight-header-match .strong-time {
+    color: #f0fdf4;
+}

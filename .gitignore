@@ -29,3 +29,6 @@ desktop.ini
 .idea/
 *.sublime-project
 *.sublime-workspace
+
+# ── Datos Locales ────────────────────────────────────────────────
+data/clients_db.json

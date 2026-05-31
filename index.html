@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lottery Tracker Pro v1.0.21</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/strong-number.css">
+    <link rel="stylesheet" href="css/mode-selector.css">
+    <link rel="stylesheet" href="css/help-menu.css">
+    <link rel="stylesheet" href="css/patterns.css">
+    <link rel="stylesheet" href="css/biblioteca.css">
+    <link rel="stylesheet" href="css/calendar.css">
+    <link rel="stylesheet" href="css/fechas.css">
+    <link rel="stylesheet" href="css/convergencia.css">
+    <link rel="stylesheet" href="css/ganancias.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Twemoji: emoji compatibles en Windows 7 y browsers antiguos -->
+    <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@14.1.0/dist/twemoji.min.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+<!-- Pantalla de Login / Control de Acceso -->
+<div id="login-screen" style="position: fixed; inset: 0; background: var(--bg, #0f172a); z-index: 99999; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif;">
+    <div style="background: var(--card-bg, #1e293b); padding: 2.5rem; border-radius: 12px; border: 1px solid rgba(59,130,246,0.3); text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+        <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Control de Acceso</h2>
+        <p style="color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem;">Por favor, ingresa tu cédula para continuar</p>
+        
+        <input type="text" id="login-cedula" placeholder="Número de Cédula" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center; font-family: monospace;" autocomplete="off" inputmode="numeric">
+        
+        <button id="login-btn" onclick="validateLogin()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #3b82f6; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(59,130,246,0.3);">Entrar al Sistema</button>
+        
+        <div id="login-error" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px;">
+            <p style="color: #f87171; margin: 0 0 1rem 0; font-weight: 600;">Cédula incorrecta o no autorizada.</p>
+            <a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="display: inline-block; background: #25D366; color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s;">📲 Contactar por WhatsApp</a>
+        </div>
+    </div>
+</div>
+
+<!-- Pantalla de Seleccion de Tipo de Loteria -->
+<div id="lottery-launcher" style="display:none;">
+    <div class="launcher-bg"></div>
+    <div class="launcher-content">
+        <div class="launcher-header">
+            <h1 class="launcher-title">Lottery Tracker <span class="launcher-pro">Pro</span></h1>
+            <p class="launcher-subtitle">Selecciona el tipo de loter&#237;a para continuar</p>
+            <div class="launcher-version">v1.0.21</div>
+        </div>
+        <div class="launcher-cards">
+            <button class="launcher-card" id="btn-tradicional" onclick="selectAppType('tradicional')">
+                <div class="launcher-card-icon">&#127922;</div>
+                <div class="launcher-card-body">
+                    <h2 class="launcher-card-title">Loter&#237;as Tradicionales</h2>
+                    <p class="launcher-card-desc">Formato de 38 animales &bull; N&#250;meros 00 &ndash; 36</p>
+                    <div class="launcher-card-modes">
+                        <span class="lcm-badge lcm-lotto">&#127922; Lotto</span>
+                        <span class="lcm-badge lcm-granja">&#128004; Granja</span>
+                        <span class="lcm-badge lcm-selva">&#127796; Selva</span>
+                    </div>
+                </div>
+                <div class="launcher-card-arrow">&#8250;</div>
+            </button>
+            <button class="launcher-card" id="btn-extendida" onclick="selectAppType('extendida')">
+                <div class="launcher-card-icon">&#129413;</div>
+                <div class="launcher-card-body">
+                    <h2 class="launcher-card-title">Loter&#237;as Extendidas</h2>
+                    <p class="launcher-card-desc">Formato de 77 animales &bull; N&#250;meros 00 &ndash; 75</p>
+                    <div class="launcher-card-modes">
+                        <span class="lcm-badge lcm-monje">&#129656; El Monje Millonario</span>
+                        <span class="lcm-badge lcm-guacharo">&#129413; El Gu&#225;charo</span>
+                    </div>
+                </div>
+                <div class="launcher-card-arrow">&#8250;</div>
+            </button>
+        </div>
+        <p class="launcher-footer">Tus datos se guardan localmente &bull; Sin conexi&#243;n a internet requerida</p>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Main App (hidden until launcher selection) -->
+<div id="main-app" style="display:none;">
+
+    <!-- ── Sidebar Backdrop ── -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- ── Sidebar Menu ── -->
+    <nav class="app-sidebar" id="app-sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-title">Men&#250; de Herramientas</span>
+            <div class="sidebar-header-actions">
+                <button class="sidebar-home-btn" id="sidebar-home-btn" onclick="goHome()" title="Volver al inicio">&#127968;</button>
+                <button class="sidebar-close" id="sidebar-close" aria-label="Cerrar">&#10005;</button>
+            </div>
+        </div>
+
+        <!-- Selector de Modo -->
+        <div class="sidebar-mode">
+            <span class="sidebar-mode-label">Modo de Juego</span>
+            <div class="custom-mode-dropdown" id="custom-mode-dropdown">
+                <button type="button" class="mode-btn" id="mode-btn">
+                    <span id="mode-btn-label">&#127922; Lotto</span>
+                    <span class="mode-btn-arrow">&#9660;</span>
+                </button>
+                <div class="mode-options" id="mode-options">
+                    <div class="mode-option" data-value="lotto">&#127922; Lotto</div>
+                    <div class="mode-option" data-value="granja">&#128004; Granja</div>
+                    <div class="mode-option" data-value="selva">&#127796; Selva</div>
+                </div>
+            </div>
+            <select id="mode-select" style="display:none">
+                <option value="lotto">Lotto</option>
+                <option value="granja">Granja</option>
+                <option value="selva">Selva</option>
+            </select>
+        </div>
+
+        <!-- Navegación -->
+        <nav class="sidebar-nav">
+            <span class="sidebar-nav-label">Secciones</span>
+            <button class="tab-btn active" data-tab="input">
+                <span class="tab-icon">&#128221;</span> Registro Diario
+            </button>
+            <button class="tab-btn" data-tab="strong-number">
+                <span class="tab-icon">&#128170;</span> N&#250;mero Fuerte
+            </button>
+            <button class="tab-btn" data-tab="analysis">
+                <span class="tab-icon">&#128202;</span> An&#225;lisis de Asociados
+            </button>
+            <button class="tab-btn" data-tab="jaula">
+                <span class="tab-icon">&#127922;</span> Jaula
+            </button>
+            <button class="tab-btn" data-tab="patterns">
+                <span class="tab-icon">&#9733;</span> Patrones
+            </button>
+            <button class="tab-btn" data-tab="history">
+                <span class="tab-icon">&#128218;</span> Historial
+            </button>
+            <button class="tab-btn" data-tab="biblioteca">
+                <span class="tab-icon">&#9874;</span> Biblioteca
+            </button>
+            <button class="tab-btn" data-tab="fechas">
+                <span class="tab-icon">&#128336;</span> Fechas
+            </button>
+            <button class="tab-btn" data-tab="ganancias">
+                <span class="tab-icon">&#128200;</span> Ganancias
+            </button>
+        </nav>
+    </nav>
+    <div class="app-container">
+        <!-- Banner de Vencimiento -->
+        <div id="sub-warning-banner" style="display: none; background: #ef4444; color: white; text-align: center; padding: 0.5rem; font-weight: bold; font-size: 0.95rem;">
+            Tu suscripción vence en <span id="sub-days-text"></span> días. 
+            <a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="color: #fff; text-decoration: underline; margin-left: 10px;">¡Renueva ahora!</a>
+        </div>
+        <header>
+            <div class="header-inner">
+                <div class="header-brand">
+                    <h1>Lottery Tracker <span class="highlight">Pro</span> <span style="font-size:0.48em;color:var(--text-secondary);vertical-align:middle;">v1.0.21</span></h1>
+                    <div class="subtitle-row">
+                        <p class="subtitle">Sistema de An&#225;lisis y Registro Diario</p>
+                        <span id="mode-indicator" class="mode-indicator-badge mode-lotto">&#127922; Lotto</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <span class="active-tab-pill" id="active-tab-label">&#128221; Registro Diario</span>
+                    <span id="sub-badge" class="global-neto-badge zero" style="background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #60a5fa; display: none;">⏳ -- días</span>
+                    <button id="logout-btn" onclick="forceLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; cursor: pointer; padding: 0.25rem 0.6rem; display: flex; align-items: center; gap: 4px; border-radius: 2rem; font-family: inherit; font-weight: 600; margin-right: 1rem; transition: background 0.2s;" title="Cerrar sesión" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+                        <span style="font-size: 1rem;">🚪</span> <span style="font-size: 0.85rem;">Salir</span>
+                    </button>
+                    <span id="global-neto-badge" class="global-neto-badge zero">Neto: 0</span>
+                    <button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir men&#250;"
+                        style="display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:5px;width:44px;height:44px;min-width:44px;min-height:44px;padding:9px;flex-shrink:0;flex-grow:0;box-sizing:border-box;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);border-radius:0.6rem;cursor:pointer;">
+                        <span style="display:block;width:100%;height:2px;background:rgba(139,92,246,0.85);border-radius:2px;flex-shrink:0;"></span>
+                        <span style="display:block;width:100%;height:2px;background:rgba(139,92,246,0.85);border-radius:2px;flex-shrink:0;"></span>
+                        <span style="display:block;width:100%;height:2px;background:rgba(139,92,246,0.85);border-radius:2px;flex-shrink:0;"></span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Tabs Navigation (hidden, controlled by sidebar) -->
+            <div class="tabs" style="display:none">
+                <button class="tab-btn active" data-tab="input"></button>
+                <button class="tab-btn" data-tab="strong-number"></button>
+                <button class="tab-btn" data-tab="analysis"></button>
+                <button class="tab-btn" data-tab="jaula"></button>
+                <button class="tab-btn" data-tab="patterns"></button>
+                <button class="tab-btn" data-tab="history"></button>
+                <button class="tab-btn" data-tab="biblioteca"></button>
+                <button class="tab-btn" data-tab="fechas"></button>
+                <button class="tab-btn" data-tab="ganancias"></button>
+            </div>
+            <!-- Input Section -->
+            <section id="input-section" class="tab-content active">
+                <div class="date-picker-container">
+                    <label>Fecha de Registro:</label>
+                    <div class="custom-date-wrapper">
+                        <button type="button" id="date-display-btn">
+                            <span class="date-btn-icon">&#128197;</span>
+                            <span id="date-display-text">--</span>
+                        </button>
+                        <div id="cal-popover" class="cal-popover">
+                            <div class="cal-header">
+                                <button type="button" class="cal-nav-btn" id="cal-prev">&#8249;</button>
+                                <span class="cal-month-label" id="cal-month-label"></span>
+                                <button type="button" class="cal-nav-btn" id="cal-next">&#8250;</button>
+                            </div>
+                            <div class="cal-weekdays">
+                                <span class="cal-weekday">Do</span>
+                                <span class="cal-weekday">Lu</span>
+                                <span class="cal-weekday">Ma</span>
+                                <span class="cal-weekday">Mi</span>
+                                <span class="cal-weekday">Ju</span>
+                                <span class="cal-weekday">Vi</span>
+                                <span class="cal-weekday">Sa</span>
+                            </div>
+                            <div class="cal-days" id="cal-days"></div>
+                            <div class="cal-footer">
+                                <button type="button" class="cal-today-btn" id="cal-today-btn">Hoy</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- input nativo oculto para compatibilidad interna -->
+                    <input type="date" id="entry-date">
+                </div>
+
+                <div class="grid-container">
+                    <!-- Generated by JS -->
+                </div>
+
+                <div class="actions">
+                    <button id="save-btn" class="primary-btn">Guardar Día</button>
+                    <button id="clear-btn" class="secondary-btn">Limpiar</button>
+                </div>
+            </section>
+
+            <!-- Strong Number Section -->
+            <section id="strong-number-section" class="tab-content">
+                <div class="strong-number-container">
+                    <div class="strong-header-controls">
+                        <div class="header-left">
+                            <h3>Análisis de Hoy</h3>
+                            <div class="strong-search-wrapper">
+                                <input type="text" id="strong-search-input" placeholder="🔍 Buscar número..."
+                                    maxlength="2" inputmode="numeric">
+                            </div>
+                        </div>
+                        <div class="view-toggle">
+                            <span class="toggle-label">🔮 Predicción</span>
+                            <label class="switch">
+                                <input type="checkbox" id="view-mode-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                            <span class="toggle-label">✅ Validación</span>
+                        </div>
+                    </div>
+                    <div id="strong-number-grid" class="strong-grid">
+                        <!-- Generated by JS -->
+                    </div>
+
+                    <!-- Pattern Recommendations -->
+                    <div id="pattern-recommendations" class="pattern-recommendations-container"
+                        style="display: block; margin-top: 1rem; padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 0.5rem;">
+                        <h4 style="color: #60a5fa; margin-bottom: 0.5rem; font-size: 0.95rem;">🧩 Patrones Recomendados
+                        </h4>
+                        <div id="recommendations-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <span style="color: var(--text-secondary); font-size: 0.9rem;">Cargando
+                                recomendaciones...</span>
+                        </div>
+                    </div>
+
+                    <!-- Convergencia de Senales -->
+                    <div class="convergencia-wrapper">
+                        <div class="convergencia-title">
+                            <span>&#127919; Convergencia de Se&#241;ales</span>
+                            <small>N&#250;meros coincidentes entre Fecha, Asociados y Patrones</small>
+                        </div>
+                        <div id="convergencia-panel" class="convergencia-panel">
+                            <span class="conv-empty">&#128313; Abre la pesta&#241;a <strong>Fechas</strong> primero para activar la convergencia.</span>
+                        </div>
+                    </div>
+
+                    <!-- Summary Fields -->
+                    <div class="strong-summary-section">
+                        <div class="summary-field">
+                            <h4>Asociados que se repiten:</h4>
+                            <div id="repeated-associates" class="summary-content">
+                                <!-- Will be populated by JS later -->
+                            </div>
+                        </div>
+
+                        <div class="summary-field">
+                            <h4>Asociados en Jaula y Juicio:</h4>
+                            <div id="jaula-juicio-associates" class="summary-content">
+                                <!-- Will be populated by JS later -->
+                            </div>
+                        </div>
+
+                        <div class="summary-field">
+                            <h4>Asociados repetidos que ya salieron:</h4>
+                            <div id="validated-associates" class="summary-content">
+                                <!-- Will be populated by JS later -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analysis Section -->
+            <section id="analysis-section" class="tab-content">
+                <div class="analysis-controls">
+                    <label for="target-number">Buscar Asociados para el número:</label>
+                    <select id="target-number">
+                        <option value="" disabled selected>Selecciona un número</option>
+                        <!-- Generated by JS -->
+                    </select>
+                    <span id="analysis-animal-label" class="analysis-animal-label"></span>
+                </div>
+
+                <div id="results-container" class="results-hidden">
+                    <h3 id="analysis-header-title">Top 10 Asociados (Últimos 15 días)</h3>
+                    <div class="stats-grid" id="stats-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Jaula Section -->
+            <section id="jaula-section" class="tab-content">
+                <!-- Juicio Section -->
+                <div class="juicio-container">
+                    <h3>⚖️ Juicio - Números Próximos a la Jaula</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        Números que tienen entre 4 y 5 días sin aparecer en los resultados
+                    </p>
+                    <div id="juicio-grid" class="juicio-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Jaula Section -->
+                <div class="jaula-container" style="margin-top: 2rem;">
+                    <h3>🔒 Jaula - Números sin Salir</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        Números que tienen más de 6 días sin aparecer en los resultados
+                    </p>
+                    <div id="jaula-grid" class="jaula-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Patterns Section -->
+            <section id="patterns-section" class="tab-content">
+                <div class="patterns-search-wrapper">
+                    <div class="patterns-search-bar" id="patterns-search-bar">
+                        <span class="psearch-icon">&#128269;</span>
+                        <input type="text" id="patterns-search-input"
+                               class="psearch-input"
+                               placeholder="Buscar n&#250;mero (00 &#8211; 36)..."
+                               maxlength="2"
+                               inputmode="numeric"
+                               autocomplete="off">
+                        <span id="patterns-search-count" class="psearch-count"></span>
+                        <button id="patterns-search-clear" class="psearch-clear" title="Limpiar">&#10005;</button>
+                    </div>
+                    <span id="patterns-search-error" class="psearch-error"></span>
+                </div>
+                <div id="patterns-container" class="patterns-grid" style="margin-top:0;">
+                    <!-- Generated by JS -->
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section id="history-section" class="tab-content">
+                <div class="history-controls"
+                    style="margin-bottom: 1rem; display: flex; gap: 1rem; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <label for="history-search" style="color: var(--text-secondary); font-size: 0.9rem;">Buscar
+                            número:</label>
+                        <input type="text" id="history-search" placeholder="Ej: 25" maxlength="2"
+                            style="padding: 0.5rem; border-radius: 0.5rem; border: 1px solid var(--border); background: var(--card-bg); color: var(--text-primary); width: 80px;">
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button id="export-btn" class="secondary-btn">💾 Exportar Datos</button>
+                        <button id="import-btn" class="secondary-btn">📂 Importar Datos</button>
+                        <button id="sync-web-btn" class="secondary-btn" style="color: #60a5fa; border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.1);" title="Descargar resultados de tu servidor central">⬇️ Sincronizar de Web</button>
+                        <input type="file" id="import-file" style="display: none" accept=".json">
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table id="history-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>8 AM</th>
+                                <th>9 AM</th>
+                                <th>10 AM</th>
+                                <th>11 AM</th>
+                                <th>12 PM</th>
+                                <th>1 PM</th>
+                                <th>2 PM</th>
+                                <th>3 PM</th>
+                                <th>4 PM</th>
+                                <th>5 PM</th>
+                                <th>6 PM</th>
+                                <th>7 PM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Biblioteca Section -->
+            <section id="biblioteca-section" class="tab-content">
+                <div class="biblioteca-header">
+                    <h3>🦁 Biblioteca de Animales</h3>
+                    <p>Consulta qué animal corresponde a cada número de la lotería.</p>
+                </div>
+                <div class="biblioteca-search-wrapper">
+                    <input type="text" id="biblioteca-search" placeholder="🔍 Buscar número o animal..." autocomplete="off">
+                </div>
+                <div id="biblioteca-grid" class="biblioteca-grid">
+                    <!-- Generated by JS -->
+                </div>
+            </section>
+
+            <!-- Fechas Section -->
+            <section id="fechas-section" class="tab-content">
+                <div class="fechas-header">
+                    <h3>&#128336; C&#225;lculo de Fechas</h3>
+                    <p>Herramientas de c&#225;lculo basadas en fechas y per&#237;odos del historial.</p>
+                </div>
+                <div id="fechas-content" class="fechas-content">
+                    <div class="fechas-placeholder">
+                        <span class="fechas-placeholder-icon">&#128336;</span>
+                        <p>M&#243;dulo en construcci&#243;n</p>
+                        <span>Pronto disponible</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ganancias Section -->
+            <section id="ganancias-section" class="tab-content">
+                <div id="ganancias-inner">
+                    <!-- Generado por JS -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    </div><!-- /#main-app -->
+
+    <!-- Floating Help Button -->
+    <div class="help-button-container">
+        <button id="help-btn" class="help-button" title="Ayuda">?</button>
+        <div id="help-menu" class="help-menu hidden">
+            <div class="help-menu-header">
+                <h3>Ayuda</h3>
+                <button id="close-help" class="close-help-btn">×</button>
+            </div>
+            <div class="help-menu-content">
+                <div class="help-section">
+                    <button class="help-section-btn active" data-section="guide">📖 Guía de Uso</button>
+                    <button class="help-section-btn" data-section="updates">🚀 Última Actualización</button>
+                    <button class="help-section-btn" data-section="history-log">📜 Histórico</button>
+                    <button class="help-section-btn" data-section="tools">🛠️ Herramientas</button>
+                </div>
+                <div class="help-content-area">
+                    <!-- Guide Section -->
+                    <div id="guide-content" class="help-content active">
+                        <h4>Guía de Uso</h4>
+
+                        <div class="guide-section">
+                            <h5>&#9776; Men&#250; de Navegaci&#243;n (Sidebar)</h5>
+                            <p>Todas las secciones de la app se acceden desde el men&#250; lateral deslizante.</p>
+                            <ul>
+                                <li><strong>Bot&#243;n &#9776; (hamburger):</strong> Abre el panel lateral desde la derecha. Est&#225; en la esquina superior derecha del encabezado.</li>
+                                <li><strong>Cerrar sidebar:</strong> Toca fuera del panel, presiona la X o la tecla Escape.</li>
+                                <li><strong>Secci&#243;n activa:</strong> El nombre de la pesta&#241;a actual aparece en una pastilla azul en el encabezado.</li>
+                                <li><strong>Selector de Modo:</strong> Dentro del sidebar, cambia entre Lotto, Granja y Selva.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128197; Calendario de Fechas</h5>
+                            <p>Haz clic en el botón de fecha para abrir el calendario flotante y cambiar el día rápidamente.</p>
+                            <ul>
+                                <li><strong>Punto verde:</strong> El día tiene las 12 horas completas registradas.</li>
+                                <li><strong>Punto amarillo:</strong> El día tiene datos pero le faltan horas por registrar.</li>
+                                <li><strong>Sin punto:</strong> Día sin ningún registro.</li>
+                                <li><strong>Botón Hoy:</strong> Salta inmediatamente a la fecha de hoy.</li>
+                                <li><strong>Flechas &#8249; &#8250;:</strong> Navega entre meses anteriores y siguientes.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128221; Registro Diario</h5>
+                            <p>Ingresa los números de la lotería por hora (8 AM - 7 PM). Los números válidos son del 0 al 36, incluyendo 00.</p>
+                            <ul>
+                                <li>Selecciona la fecha con el nuevo calendario flotante</li>
+                                <li>Ingresa cada número en su hora correspondiente</li>
+                                <li><strong>Nombre del animal:</strong> Aparece automáticamente debajo de cada campo mientras escribes</li>
+                                <li>Haz clic en "Guardar Día" para almacenar los datos</li>
+                                <li>Usa "Limpiar" para borrar todos los campos del día</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128170; Número Fuerte</h5>
+                             <p>Analiza los números del día y sus asociados basándose en los últimos 15 días (Tradicional) ó 25 días (Extendida) de historial.</p>
+                            <ul>
+                                <li><strong>Cabecera de cada hora:</strong> Muestra el número principal y el nombre de su animal</li>
+                                <li><strong>Modo Predicción (día incompleto):</strong>
+                                    <ul>
+                                        <li>&#128995; Morado: Asociado aparece 2-3 veces entre las horas del día</li>
+                                        <li>&#128994; Verde: Asociado aparece 4+ veces</li>
+                                        <li>Rojo/Amarillo: El asociado está en Jaula o Juicio (aviso de frialdad)</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Modo Validación (día completo):</strong>
+                                    <ul>
+                                        <li>&#128994; Verde: Asociado que se validó (salió después de la predicción)</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Asociados que se repiten:</strong> Números frecuentes que aún no han salido hoy y que no están en Jaula ni Juicio</li>
+                                <li><strong>Asociados en Jaula y Juicio:</strong> Números asociados marcados como fríos, mostrados como advertencia</li>
+                                <li><strong>Asociados validados:</strong> Números asociados que ya salieron en el día</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128202; Análisis de Asociados</h5>
+                             <p>Busca el Top 10 (Tradicional) ó Top 20 (Extendida) de números más asociados a un número específico en los últimos 15 ó 25 días según el modo.</p>
+                            <ul>
+                                <li>Selecciona un número del menú desplegable (muestra el nombre del animal)</li>
+                                <li>Una pastilla morada aparece junto al selector con el nombre del animal elegido</li>
+                                <li>Ve el Top 10 de números asociados, cada uno con su nombre de animal</li>
+                                <li>El conteo muestra cuántas veces apareció cada asociado junto al número seleccionado</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#127922; Jaula y Juicio</h5>
+                            <p>Sistema de dos niveles para identificar números frios según su tiempo sin aparecer.</p>
+                            <ul>
+                                <li><strong>&#9878;&#65039; Juicio (4-5 días):</strong>
+                                    <ul>
+                                        <li>Números próximos a entrar en la jaula</li>
+                                        <li>Tarjetas amarillas para fácil identificación</li>
+                                        <li>Sistema de alerta temprana</li>
+                                    </ul>
+                                </li>
+                                <li><strong>&#128274; Jaula (6+ días):</strong>
+                                    <ul>
+                                        <li>Números con más de 6 días sin salir</li>
+                                        <li>Tarjetas rojas para alta visibilidad</li>
+                                        <li>Incluye números que nunca han aparecido</li>
+                                    </ul>
+                                </li>
+                                <li>Cada tarjeta muestra el número, su animal, los días transcurridos y la fecha de última aparición</li>
+                                <li>Ordenados de mayor a menor tiempo sin salir</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#9733; Patrones</h5>
+                            <p>Detecta secuencias de n&#250;meros que se han repetido en los 60 d&#237;as previos a la fecha seleccionada.</p>
+                            <ul>
+                                <li>Analiza grupos de 3 a 5 n&#250;meros que aparecen juntos con frecuencia</li>
+                                <li>Cada c&#237;rculo muestra el n&#250;mero y el nombre de su animal</li>
+                                <li><strong>Recomendaci&#243;n en vivo:</strong> Sugiere el n&#250;mero faltante en patrones activos</li>
+                                <li>Los patrones tienen un ID &#250;nico (#1, #2...) para f&#225;cil referencia</li>
+                                <li><strong>&#128197; Relativo a la fecha:</strong> Usa los 60 d&#237;as previos al d&#237;a seleccionado en el calendario, no solo el d&#237;a de hoy</li>
+                                <li><strong>&#10003; Cumplimiento:</strong> Un banner y un badge verde indican si todos los n&#250;meros del patr&#243;n salieron en la fecha activa</li>
+                                <li><strong>&#128269; Buscar por n&#250;mero:</strong> Escribe un n&#250;mero (0&#8211;36 &#243; 00) para filtrar patrones que lo contienen. El n&#250;mero se resalta en dorado dentro de cada tarjeta</li>
+                                <li><strong>Contador:</strong> Pastilla que indica cu&#225;ntos patrones coinciden. Se pone roja si el valor est&#225; fuera de rango</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#9874; Biblioteca de Animales</h5>
+                            <p>Consulta la tabla completa de correspondencia entre los números (0-36 y 00) y su animal asignado.</p>
+                            <ul>
+                                <li><strong>Búsqueda inteligente:</strong> Escribe un número o el nombre del animal para filtrar instantáneamente</li>
+                                <li>Muestra la letra inicial del animal en un círculo de color para identificación rápida</li>
+                                <li>El número 00 (Ballena) tiene color diferenciado en azul</li>
+                                <li>Los nombres de los animales aparecen integrados en <strong>todos</strong> los módulos de la app</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128218; Historial</h5>
+                            <p>Visualiza todos los registros guardados en formato de tabla completa.</p>
+                            <ul>
+                                <li><strong>Buscar número:</strong> Filtra el historial por un número específico (resalta en amarillo)</li>
+                                <li><strong>Exportar:</strong> Descarga una copia de seguridad en formato JSON</li>
+                                <li><strong>Exportar:</strong> Descarga copia de seguridad JSON con el nombre de la loter&#237;a activa (ej: <code>historial_LOTTO_2026-04-28.json</code>)</li>
+                                <li><strong>Importar:</strong> Carga datos desde JSON. Compatible con Bloc de notas de Windows (elimina BOM autom&#225;ticamente)</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#127920; Modos (Lotto / Granja / Selva)</h5>
+                            <p>Cambia entre tres bases de datos completamente independientes con el selector dentro del men&#250; lateral (&#9776;).</p>
+                            <ul>
+                                <li>Cada modo guarda sus datos por separado en el navegador</li>
+                                <li>&#218;til para rastrear diferentes loter&#237;as simult&#225;neamente</li>
+                                <li>La exportaci&#243;n e importaci&#243;n aplican solo al modo activo</li>
+                                <li><strong>&#127991; Indicador de modo:</strong> Una pastilla de color en el encabezado muestra siempre el modo activo &mdash; morada para Lotto, verde para Granja, teal para Selva. Se actualiza instant&#225;neamente al cambiar de modo.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128336; Calculo de Fechas (Piramide)</h5>
+                            <p>Genera una piramide de reduccion a partir de la fecha activa para extraer numeros del 0 al 36.</p>
+                            <ul>
+                                <li><strong>Sincronizacion automatica:</strong> La piramide se recalcula sola al cambiar la fecha en el calendario</li>
+                                <li><strong>Horizontal / Espejo:</strong> Pares de digitos adyacentes en cada fila, en ambas direcciones</li>
+                                <li><strong>Vertical:</strong> Digitos en la misma columna entre filas consecutivas</li>
+                                <li><strong>Diagonal:</strong> Cruces entre niveles adyacentes de la piramide</li>
+                                <li><strong>Caso especial 00:</strong> Dos ceros contiguos en cualquier eje se detectan automaticamente</li>
+                                <li>Filtros toggleables con actualizacion instantanea. Cada resultado muestra el nombre del animal</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#127919; Convergencia de Senales</h5>
+                            <p>Panel en <strong>Numero Fuerte</strong> que cruza la piramide con asociados y patrones activos del dia.</p>
+                            <ul>
+                                <li><strong style="color:#fbbf24;">&#128293; Triple Convergencia:</strong> Numero en Fecha + Asociados + Patron &mdash; maxima prioridad</li>
+                                <li><strong style="color:#a78bfa;">&#9889; Fecha + Asociados:</strong> Piramide y asociados repetidos apuntan al mismo numero</li>
+                                <li><strong style="color:#34d399;">&#10024; Fecha + Patron:</strong> Piramide y numero faltante de patron activo coinciden</li>
+                                <li>Cada numero aparece solo una vez, en la escala de mayor prioridad</li>
+                                <li>Requiere abrir la pestana Fechas al menos una vez en la sesion</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128200; Ganancias y P&eacute;rdidas</h5>
+                            <p>Registra tus apuestas por hora y n&uacute;mero. Calcula autom&aacute;ticamente las ganancias cuando el sorteo coincide con lo apostado (&#215;30).</p>
+                            <ul>
+                                <li><strong>Neto global en el encabezado:</strong> Una pastilla siempre visible muestra el balance combinado de los 3 modos para la fecha activa &mdash; roja si pierdes, verde si ganas.</li>
+                                <li><strong>&#127915; Ticket:</strong> Selecciona la hora del sorteo con el selector personalizado y escribe el monto apostado en cada n&uacute;mero. Los inputs se activan solo al elegir hora.</li>
+                                <li><strong>&#128202; Estad&iacute;sticas:</strong> Tarjetas de resumen (Apostado / Ganado / Neto), gr&aacute;fica de barras por hora y tabla detallada con resultado de cada apuesta del d&iacute;a.</li>
+                                <li><strong>&#128203; Historial:</strong> Tabla completa de todos los d&iacute;as con apuestas. El d&iacute;a actual se resalta en morado. Permite exportar e importar datos en formato JSON.</li>
+                                <li><strong>L&oacute;gica de ganancias:</strong> Si el n&uacute;mero registrado en el Registro Diario para esa hora coincide con tu apuesta &rarr; ganancia = monto &#215; 30. Universal en Lotto, Granja y Selva.</li>
+                                <li><strong>Vinculado a la fecha:</strong> Al cambiar la fecha en el Registro Diario, la pesta&ntilde;a Ganancias carga los datos de ese d&iacute;a autom&aacute;ticamente.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Updates Section -->
+                    <div id="updates-content" class="help-content">
+                        <h4>Última Actualización - v1.0.20</h4>
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Fecha: 25 de Mayo, 2026</p>
+
+                        <div class="guide-section">
+                            <h5>&#128276; Nuevo Sistema de Notificaciones y Confirmaciones</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Se eliminaron todas las molestas alertas bloqueantes del navegador. El sistema ahora usa dos mecanismos modernos: <strong>Toasts</strong> (notificaciones flotantes que desaparecen solas) para avisos informativos, y <strong>Cuadros de Confirmaci&#243;n Personalizados</strong> (modales estilizados con botones Aceptar/Cancelar) para acciones cr&#237;ticas como limpiar datos o importar archivos.</p>
+                        </div>
+
+                        <div class="guide-section" style="margin-top:1rem;">
+                            <h5>⚡ Optimización de Rendimiento Extremo</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Se corrigió un cuello de botella matemático en el cálculo de "Nombres Fuertes". Ahora el sistema procesa miles de datos para la modalidad Extendida sin congelar la pestaña, siendo instantáneo al cambiar de fechas.</p>
+                        </div>
+
+                        <div class="guide-section" style="margin-top:1rem;">
+                            <h5>🛡️ Scraper Python Blindado</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">El bot de sincronización ahora tiene un sistema anti-cuelgues (timeout) y un mejor manejo de errores de red, garantizando que el proceso de fondo nunca se quede atascado consumiendo memoria.</p>
+                        </div>
+
+                        <div class="guide-section" style="margin-top:1rem;">
+                            <h5>💾 Exportación Segura de Historial</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Se modernizó el motor de exportación de datos para garantizar que el 100% de tu historial de ganancias y registros se respalde sin pérdida de información.</p>
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1.5rem 0;">
+
+                        <h4>Historial Reciente - v1.0.20</h4>
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Fecha: 25 de Mayo, 2026</p>
+
+                        <div class="guide-section">
+                            <h5>&#129302; Bot de Sincronizaci&#243;n Autom&#225;tica (Escritorio)</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">El sistema ahora cuenta con un bot local de Windows (<code>master_sync.bat</code>) que se ejecuta silenciosamente cada hora (8:12 AM - 7:12 PM) en tu PC. Este bot descarga los resultados y los sube autom&#225;ticamente a tu cuenta de GitHub, salt&#225;ndose los bloqueos de seguridad anti-bots de los servidores p&#250;blicos.</p>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#127758; Nuevo Scraper por URL Diaria</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">El sistema ahora descarga los resultados accediendo a una URL por d&iacute;a (<code>loteriadehoy.com/animalito/[loter&iacute;a]/resultados/[fecha]/</code>), lo que elimina los errores de sorteos faltantes que ocurr&iacute;an con la descarga semanal anterior.</p>
+                        </div>
+
+                        <div class="guide-section" style="margin-top:1rem;">
+                            <h5>&#128290; Detecci&oacute;n de Animales por N&uacute;mero</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">En lugar de buscar el nombre del animal en el texto, el scraper ahora extrae el n&uacute;mero que aparece al inicio de cada entrada (ej. <em>"15 Perro"</em>), siendo m&aacute;s robusto frente a variaciones ortogr&aacute;ficas o errores tipogr&aacute;ficos.</p>
+                        </div>
+
+                        <div class="guide-section" style="margin-top:1rem;">
+                            <h5>&#127891; Modo Extendida — Loterias de 77 N&uacute;meros</h5>
+                            <ul>
+                                <li><strong>Gu&aacute;charo Activo y Monje Millonario</strong> ahora reconocen su formato de 77 n&uacute;meros (0-75 + 00).</li>
+                                <li><strong>"Patrono"</strong> en el Monje Millonario es correctamente identificado como el n&uacute;mero 75.</li>
+                                <li>La cuadr&iacute;cula de Ganancias en modo extendido muestra 5 columnas para acomodar todos los n&uacute;meros.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section" style="margin-top:1rem;">
+                            <h5>&#128241; Correcciones de Vista M&oacute;vil</h5>
+                            <ul>
+                                <li><strong>Versi&oacute;n portable restaurada:</strong> El archivo <code>mobile.css</code> no estaba siendo incluido en la versi&oacute;n portable, causando que toda la interfaz se viera con estilos de escritorio en el tel&eacute;fono.</li>
+                                <li><strong>Burbuja de ayuda reubicada:</strong> En m&oacute;vil, el bot&oacute;n de ayuda se mueve a la esquina inferior <em>izquierda</em> para no tapar el n&uacute;mero 36 (o 75 en extendida) en la cuadr&iacute;cula de Ganancias.</li>
+                                <li><strong>Padding inferior en Ganancias:</strong> La &uacute;ltima fila de la cuadr&iacute;cula ya no queda oculta detr&aacute;s de la burbuja.</li>
+                                <li><strong>Men&uacute; de ayuda corregido:</strong> Se corrigieron etiquetas HTML mal estructuradas que provocaban que las secciones se encimaran y no permitieran el desplazamiento.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section" style="margin-top:1rem;">
+                            <h5>&#9200; Sugerencia Autom&aacute;tica de Hora en Ganancias</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Al entrar a la pesta&ntilde;a Ganancias sin una hora seleccionada, el sistema detecta cu&aacute;l es el pr&oacute;ximo sorteo disponible bas&aacute;ndose en la hora actual y qu&eacute; sorteos ya tienen apuestas registradas. La selecci&oacute;n se puede cambiar manualmente en cualquier momento.</p>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128270; B&#250;squeda de Patrones &mdash; Correcci&#243;n de Falso Positivo</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Al buscar el n&#250;mero <strong>0</strong> (El Delf&#237;n), el buscador ya no resaltaba err&#243;neamente tarjetas que conten&#237;an el <strong>00</strong> (La Tortuga). La condici&#243;n de relleno con cero ahora aplica solo para los n&#250;meros del 1 al 9.</p>
+                        </div>
+
+                        <div class="guide-section" style="margin-top:1rem;">
+                            <h5>&#128295; Correcciones de Lógica y Matemáticas (Auditor&#237;a)</h5>
+                            <ul>
+                                <li><strong>Bug NaN eliminado:</strong> Código muerto en Ganancias que operaba sobre texto formateado, generando resultados inválidos.</li>
+                                <li><strong>Umbral Jaula corregido:</strong> Números con exactamente 6 días sin salir quedaban fuera de la Jaula. Corregido a <em>6 o más días</em>.</li>
+                                <li><strong>Búsqueda Historial normalizada:</strong> Buscar <code>5</code> y <code>05</code> ahora devuelven los mismos resultados.</li>
+                                <li><strong>Fecha de referencia en Patrones:</strong> Se pasa explícitamente la fecha activa al analizador para garantizar coherencia.</li>
+                                <li><strong>localStorage estable:</strong> La iteración usa <code>Object.keys()</code> en lugar de índices numéricos, compatible con todos los navegadores.</li>
+                                <li><strong>Alerta no bloqueante:</strong> Reemplazado el <code>alert()</code> al inicio por notificación diferida con <code>setTimeout</code>.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section" style="margin-top:1rem;">
+                            <h5>&#127912; Auditor&#237;a y Limpieza de CSS</h5>
+                            <ul>
+                                <li><strong>mode-selector.css duplicado:</strong> Eliminado el enlace doble en <code>index.html</code> que lo cargaba dos veces.</li>
+                                <li><strong>Variable indefinida corregida:</strong> <code>var(--text)</code> no existe; corregido a <code>var(--text-primary)</code> en el buscador de Número Fuerte.</li>
+                                <li><strong>transition:all eliminado:</strong> Las tres propiedades <code>transition: all</code> en el menú de ayuda reemplazadas por propiedades específicas para mejor rendimiento.</li>
+                                <li><strong>Transición de Patrones unificada:</strong> Dos reglas <code>.pattern-card</code> en conflicto fusionadas; se recupera la animación de <code>box-shadow</code> que había desaparecido.</li>
+                                <li><strong>CSS muerto eliminado:</strong> Reglas de posicionamiento <code>top/left</code> en los spans del hamburger (el botón usa flexbox, no position:absolute).</li>
+                                <li><strong>stat-card unificado:</strong> Dos definiciones en conflicto de <code>.stat-card</code> en <code>style.css</code> fusionadas en una sola.</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                    <!-- History Log Section -->
+                    <div id="history-log-content" class="help-content">
+                        <h4>Hist&#243;rico de Actualizaciones</h4>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.20 &mdash; Scraper Diario, Modo Extendido y Mejoras M&oacute;vil</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">24 de Mayo, 2026</p>
+                            <ul>
+                                <li><strong>&#127758; Scraper por URL diaria:</strong> Descarga resultados d&iacute;a a d&iacute;a eliminando errores de sorteos faltantes.</li>
+                                <li><strong>&#128290; Detecci&oacute;n por n&uacute;mero:</strong> El scraper extrae el n&uacute;mero al inicio de cada entrada en lugar de buscar el nombre del animal.</li>
+                                <li><strong>&#127891; Modo Extendida (77 n&uacute;meros):</strong> Gu&aacute;charo Activo y Monje Millonario con soporte completo; "Patrono" identificado como n&uacute;mero 75.</li>
+                                <li><strong>&#128241; mobile.css restaurado:</strong> La versi&oacute;n portable ahora incluye correctamente todos los estilos m&oacute;viles.</li>
+                                <li><strong>&#128241; Burbuja de ayuda reubicada:</strong> En m&oacute;vil pasa a la esquina inferior izquierda para no tapar el &uacute;ltimo n&uacute;mero de la cuadr&iacute;cula de Ganancias.</li>
+                                <li><strong>&#9200; Sugerencia autom&aacute;tica de hora:</strong> Ganancias pre-selecciona el pr&oacute;ximo sorteo disponible al abrirse.</li>
+                                <li><strong>🛠️ Menú de ayuda corregido:</strong> Estructura HTML desalineada reparada para evitar solapamientos y restaurar el scroll.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.19 &mdash; Auditor&#237;a, Bugs Cr&#237;ticos y Limpieza CSS</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">4 de Mayo, 2026</p>
+                            <ul>
+                                <li><strong>&#128270; B&#250;squeda Patrones:</strong> Corregido falso positivo que marcaba <em>00</em> al buscar <em>0</em> (El Delf&#237;n).</li>
+                                <li><strong>Bug NaN:</strong> Eliminado código muerto en Ganancias que operaba sobre texto formateado.</li>
+                                <li><strong>Umbral Jaula:</strong> Corregido de &ldquo;&gt; 6 d&#237;as&rdquo; a &ldquo;&ge; 6 d&#237;as&rdquo; para no excluir el d&#237;a exacto 6.</li>
+                                <li><strong>Historial normalizado:</strong> Buscar <code>5</code> y <code>05</code> devuelven los mismos resultados.</li>
+                                <li><strong>Fecha de referencia Patrones:</strong> Se pasa la fecha activa al analizador para garantizar coherencia.</li>
+                                <li><strong>localStorage estable:</strong> Iteraci&#243;n con <code>Object.keys()</code>, compatible con todos los navegadores.</li>
+                                <li><strong>Alerta no bloqueante:</strong> <code>alert()</code> al inicio reemplazado por notificaci&#243;n diferida.</li>
+                                <li><strong>CSS &mdash; mode-selector.css duplicado eliminado</strong> del <code>index.html</code>.</li>
+                                <li><strong>CSS &mdash; <code>var(--text)</code> indefinido</strong> corregido a <code>var(--text-primary)</code> en el buscador de N&#250;mero Fuerte.</li>
+                                <li><strong>CSS &mdash; transition:all</strong> reemplazado por propiedades espec&#237;ficas en el men&#250; de ayuda.</li>
+                                <li><strong>CSS &mdash; Transici&#243;n pattern-card</strong> unificada; box-shadow recuperado.</li>
+                                <li><strong>CSS &mdash; stat-card</strong> y reglas CSS muertas del hamburger eliminadas.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.18 &mdash; M&#243;dulo Ganancias y P&#233;rdidas</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">1 de Mayo, 2026</p>
+                            <ul>
+                                <li><strong>&#128200; M&#243;dulo Ganancias y P&#233;rdidas:</strong> Nueva pesta&#241;a con 3 sub-vistas: Ticket, Estad&#237;sticas (gr&#225;fica + tabla) e Historial (exportar/importar).</li>
+                                <li><strong>Badge Neto Global:</strong> Indicador en el encabezado que suma los 3 modos para la fecha activa. Verde si ganas, rojo si pierdes.</li>
+                                <li><strong>C&#225;lculo &#215;30 autom&#225;tico:</strong> Si el resultado del sorteo coincide con una apuesta, la ganancia se aplica instant&#225;neamente.</li>
+                                <li><strong>Gr&#225;fica por hora:</strong> Barras CSS en Estad&#237;sticas mostrando el resultado de cada hora del d&#237;a.</li>
+                                <li><strong>Historial exportable:</strong> JSON con todos los d&#237;as apostados del modo activo, importable en cualquier dispositivo.</li>
+                                <li>Consolidaci&#243;n como versi&#243;n estable con todas las mejoras de v1.0.17.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.17 - Indicador de Modo, Rendimiento y Exportaci&#243;n</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">28 de Abril &ndash; 1 de Mayo, 2026</p>
+                            <ul>
+                                <li><strong>&#127991; Indicador de modo en header:</strong> Pastilla de color (morada/verde/teal) visible siempre en el encabezado sin necesidad de abrir el sidebar.</li>
+                                <li><strong>&#128190; Exportaci&#243;n identificada:</strong> El archivo JSON descargado incluye el nombre del modo (LOTTO, GRANJA o SELVA) para identificar cada respaldo f&#225;cilmente.</li>
+                                <li><strong>&#9889; Rendimiento sidebar:</strong> Eliminado <code>backdrop-filter: blur()</code>, reducidas 8 animaciones a 1, bot&#243;n hamburger agrandado (44px), soporte <code>prefers-reduced-motion</code>.</li>
+                                <li><strong>&#128221; Gu&#237;a de Ayuda:</strong> Actualizada con todas las nuevas funciones, secciones de Modos, Herramientas e Hist&#243;rico completos.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.16 - Men&#250; Lateral y Mejoras de Patrones</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">21 de Abril, 2026</p>
+                            <ul>
+                                <li><strong>&#128193; Sidebar:</strong> Todos los tabs y el selector de modo se ocultaron en un men&#250; deslizante lateral con hamburger animado.</li>
+                                <li><strong>&#9733; Patrones relativos a fecha:</strong> El an&#225;lisis usa los 60 d&#237;as anteriores a la fecha seleccionada.</li>
+                                <li><strong>&#10003; Cumplimiento de patrones:</strong> Indica si un patr&#243;n se cumpli&#243; en la fecha activa con badge verde.</li>
+                                <li><strong>&#128269; B&#250;squeda validada (00-36):</strong> Solo permite n&#250;meros dentro del rango v&#225;lido de la ruleta.</li>
+                                <li><strong>Twemoji + Importaci&#243;n + Ortograf&#237;a:</strong> Emojis compatibles, UTF-8/BOM fix, Ciempie&#769;s corregido.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.15 - Pir&#225;mide de Fechas y Convergencia</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">20 de Abril, 2026</p>
+                            <ul>
+                                <li><strong>&#128336; Pesta&#241;a Fechas:</strong> Pir&#225;mide de reducci&#243;n escalonada con 4 modos de lectura (Horizontal, Espejo, Vertical, Diagonal) sincronizada al calendario.</li>
+                                <li><strong>&#127919; Convergencia de Se&#241;ales:</strong> Panel en N&#250;mero Fuerte que cruza pir&#225;mide + asociados + patrones en 3 escalas de prioridad.</li>
+                                <li><strong>&#128260; Auto-refresco:</strong> N&#250;mero Fuerte se actualiza instant&#225;neamente al cambiar de fecha.</li>
+                                <li><strong>Correcci&#243;n ayuda:</strong> Men&#250; de ayuda con desplazamiento correcto y divs balanceados.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.14 - Sistema de Animales y Calendario</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">19 de Abril, 2026</p>
+                            <ul>
+                                <li><strong>&#9874; Biblioteca de Animales:</strong> Nueva pesta&#241;a con tabla completa de correspondencia n&#250;mero-animal (0-36 y 00) con buscador inteligente.</li>
+                                <li><strong>Nombres en tiempo real:</strong> El nombre del animal aparece al escribir en el Registro Diario, en cabeceras de N&#250;mero Fuerte, en Jaula/Juicio, en An&#225;lisis de Asociados y en Patrones.</li>
+                                <li><strong>&#128197; Calendario Flotante:</strong> Nuevo selector de fecha visual con punto verde (d&#237;a completo), punto amarillo (d&#237;a parcial), navegaci&#243;n por meses y bot&#243;n Hoy.</li>
+                                <li><strong>Correcci&#243;n Asociados:</strong> Los asociados repetidos ya no muestran n&#250;meros en Jaula o Juicio.</li>
+                                <li><strong>Compatibilidad Windows 7:</strong> Emojis problem&#225;ticos reemplazados por caracteres HTML universales.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.13 - Patrones Recomendados</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">12 de Diciembre, 2025</p>
+                            <ul>
+                                <li><strong>&#127919; Recomendaci&#243;n en Vivo:</strong> Sugerencia de n&#250;meros faltantes en patrones activos.</li>
+                                <li><strong>&#128290; Identificaci&#243;n Num&#233;rica:</strong> Etiquetas #ID para patrones.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.12 - Sistema de Patrones</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">12 de Diciembre, 2025</p>
+                            <ul>
+                                <li><strong>&#129513; Patrones:</strong> An&#225;lisis de secuencias repetidas (3-5 n&#250;meros) en los &#250;ltimos 60 d&#237;as.</li>
+                                <li><strong>&#9889; Rendimiento:</strong> Procesamiento as&#237;ncrono para c&#225;lculos intensivos sin congelar la UI.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.11 - Optimizaci&#243;n M&#243;vil</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">11 de Diciembre, 2025</p>
+                            <ul>
+                                <li><strong>&#128241; Navegaci&#243;n M&#243;vil:</strong> Men&#250; desplegable para mejor uso en pantallas peque&#241;as.</li>
+                                <li><strong>&#128070; Scroll Independiente:</strong> Mejoras en la visualizaci&#243;n de tablas.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.10 - Nuevo Modo Selva</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">10 de Diciembre, 2025</p>
+                            <ul>
+                                <li><strong>&#127796; Modo Selva:</strong> Se agrega una tercera base de datos independiente.</li>
+                                <li><strong>&#128260; Gesti&#243;n de Datos:</strong> Separaci&#243;n completa de registros entre Lotto, Granja y Selva.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.9 - Sistema de Juicio</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">09 de Diciembre, 2025</p>
+                            <ul>
+                                <li><strong>&#9878; Juicio:</strong> Alerta preventiva para n&#250;meros con 4-5 d&#237;as sin salir.</li>
+                                <li><strong>&#127912; Integraci&#243;n Visual:</strong> Notificaciones de Jaula/Juicio dentro de la grilla de N&#250;mero Fuerte.</li>
+                                <li><strong>&#128202; Feedback Visual:</strong> Tarjetas amarillas para alertas tempranas.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.8 - Sistema Jaula</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">08 de Diciembre, 2025</p>
+                            <ul>
+                                <li><strong>&#128274; Jaula:</strong> Identificaci&#243;n de n&#250;meros &#8220;fr&#237;os&#8221; (+6 d&#237;as sin salir).</li>
+                                <li><strong>&#128737; Estabilidad:</strong> Sistema de &#8220;Safe Load&#8221; para recuperar datos corruptos.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--text-secondary);">v1.0.7 - Centro de Ayuda</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">07 de Diciembre, 2025</p>
+                            <ul>
+                                <li><strong>&#128214; Documentaci&#243;n:</strong> Se integra este men&#250; de ayuda y gu&#237;a de uso.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--text-secondary);">v1.0.4 - v1.0.6 - Mejoras de Calidad</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">05-06 de Diciembre, 2025</p>
+                            <ul>
+                                <li><strong>v1.0.5:</strong> Refinamiento del algoritmo de N&#250;mero Fuerte (an&#225;lisis de 15 d&#237;as).</li>
+                                <li><strong>v1.0.4:</strong> Validaci&#243;n estricta de entrada (0-36 y 00) para prevenir errores.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--text-secondary);">v1.0.3 - Multi-Modo</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">04 de Diciembre, 2025</p>
+                            <ul>
+                                <li><strong>&#127922; Selector de Modo:</strong> Soporte inicial para cambiar entre Lotto y Granja.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--text-secondary);">v1.0.1 - v1.0.2 - Funciones Core</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">02-03 de Diciembre, 2025</p>
+                            <ul>
+                                <li><strong>v1.0.2:</strong> B&#250;squeda en tiempo real dentro del historial.</li>
+                                <li><strong>v1.0.1:</strong> Lanzamiento del m&#243;dulo &#8220;N&#250;mero Fuerte&#8221;.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--text-secondary);">v1.0.0 - Lanzamiento</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">01 de Diciembre, 2025</p>
+                            <ul>
+                                <li>Registro diario, Historial y Exportaci&#243;n JSON.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Tools Section -->
+                    <div id="tools-content" class="help-content">
+                        <h4>Herramientas</h4>
+
+                        <div class="guide-section">
+                            <h5>&#128197; Calendario Flotante</h5>
+                            <p>Reemplaza el selector de fecha nativo con un calendario visual interactivo.</p>
+                            <ul>
+                                <li>Haz clic en el botón de fecha para abrir el calendario</li>
+                                <li>Los días con <strong style="color: var(--success);">punto verde</strong> tienen las 12 horas completadas</li>
+                                <li>Los días con <strong style="color: #facc15;">punto amarillo</strong> tienen registros parciales</li>
+                                <li>Navega entre meses con las flechas &#8249; &#8250;</li>
+                                <li>El botón <strong>Hoy</strong> lleva directo a la fecha actual</li>
+                                <li>El calendario se cierra automáticamente al seleccionar un día o hacer clic fuera</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128190; Exportar Datos</h5>
+                            <p>Descarga una copia de seguridad de todos tus datos en formato JSON.</p>
+                            <ul>
+                                <li>Preserva todos los registros del modo activo (Lotto, Granja o Selva)</li>
+                                <li>El archivo incluye el modo activo y la fecha en el nombre (ej: <code>historial_LOTTO_2026-04-28.json</code>)</li>
+                                <li><strong>Importante:</strong> Exporta por separado cada modo si usas los tres</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128194; Importar Datos</h5>
+                            <p>Carga datos desde un archivo JSON previamente exportado.</p>
+                            <ul>
+                                <li>Reemplaza los datos actuales del modo seleccionado</li>
+                                <li>Muestra confirmación antes de sobrescribir</li>
+                                <li>Útil para restaurar respaldos o transferir datos entre dispositivos</li>
+                                <li><strong>Formato requerido:</strong> El JSON debe tener la estructura <code>{"YYYY-MM-DD": {"8": "5", "9": "12"...}}</code></li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128269; Buscar en Historial</h5>
+                            <p>Filtra el historial completo por un número específico.</p>
+                            <ul>
+                                <li>Muestra solo los días donde apareció el número buscado</li>
+                                <li>Resalta el número en amarillo para fácil identificación</li>
+                                <li>Búsqueda en tiempo real mientras escribes</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#127920; Selector de Modo</h5>
+                            <p>Cambia entre las tres bases de datos independientes.</p>
+                            <ul>
+                                <li>Cada modo mantiene datos completamente separados</li>
+                                <li>Los cambios se guardan automáticamente al cambiar de modo</li>
+                                <li>Útil para rastrear Lotto, Granja y Selva simultáneamente</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128268; Buscador de Número Fuerte</h5>
+                            <p>Filtra las columnas de Número Fuerte por un número específico.</p>
+                            <ul>
+                                <li>Escribe un número para ver solo las horas donde ese número salió o aparece como asociado</li>
+                                <li>Espera 300ms después de escribir para evitar retrasos</li>
+                                <li>Borra el campo para volver a la vista completa</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#129529; Limpiar Campos</h5>
+                            <p>Borra todos los campos de entrada del d&#237;a actual.</p>
+                            <ul>
+                                <li>Solo limpia la vista, no elimina datos ya guardados</li>
+                                <li>Requiere confirmaci&#243;n antes de limpiar</li>
+                                <li>&#218;til para empezar de nuevo sin afectar el historial</li>
+                                <li>Tambi&#233;n borra los nombres de animales debajo de cada campo</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#127991; Indicador de Modo</h5>
+                            <p>Pastilla de color en el encabezado que muestra siempre el modo activo.</p>
+                            <ul>
+                                <li>Visible sin necesidad de abrir el men&#250; lateral</li>
+                                <li><strong style="color:#c4b5fd;">Morada</strong> = Lotto &nbsp;|&nbsp; <strong style="color:#6ee7b7;">Verde</strong> = Granja &nbsp;|&nbsp; <strong style="color:#5eead4;">Teal</strong> = Selva</li>
+                                <li>Se actualiza instant&#225;neamente al cambiar de modo</li>
+                                <li>Sit&#250;ada junto al subt&#237;tulo del encabezado para m&#225;xima visibilidad</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js?v=1.0.21"></script>
+</body>
+
+</html>
+
+
+
+

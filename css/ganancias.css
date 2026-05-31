@@ -1,0 +1,514 @@
+/* ═══════════════════════════════════════════
+   GANANCIAS Y PÉRDIDAS — Lottery Tracker Pro
+   ═══════════════════════════════════════════ */
+
+/* ── Selector de hora ─────────────────────── */
+.gan-hour-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 1rem 1rem 0.85rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.85rem;
+    margin-bottom: 0.85rem;
+}
+
+.gan-hour-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+/* ── Custom hour dropdown (mismo patrón que mode-selector) ── */
+.gan-hour-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.gan-hour-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 0.85rem;
+    background: rgba(139,92,246,0.1);
+    border: 1px solid rgba(139,92,246,0.35);
+    border-radius: 0.6rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    text-align: left;
+}
+
+.gan-hour-btn:hover,
+.gan-hour-btn.open {
+    border-color: rgba(139,92,246,0.65);
+    background: rgba(139,92,246,0.16);
+}
+
+.gan-hour-btn-arrow {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+}
+
+.gan-hour-btn.open .gan-hour-btn-arrow {
+    transform: rotate(180deg);
+}
+
+.gan-hour-options {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: var(--card-bg, #1e1b4b);
+    border: 1px solid rgba(139,92,246,0.4);
+    border-radius: 0.6rem;
+    overflow: hidden;
+    z-index: 200;
+    display: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.gan-hour-options.open {
+    display: block;
+}
+
+.gan-hour-option {
+    padding: 0.55rem 0.85rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.gan-hour-option:hover {
+    background: rgba(139,92,246,0.15);
+}
+
+.gan-hour-option.active {
+    background: rgba(139,92,246,0.22);
+    color: #c4b5fd;
+    font-weight: 700;
+}
+
+.gan-hour-option.placeholder {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* ── Advertencia ──────────────────────────── */
+.gan-warning {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.85rem;
+    background: rgba(251,191,36,0.1);
+    border: 1px solid rgba(251,191,36,0.35);
+    border-radius: 0.6rem;
+    color: #fcd34d;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.gan-warning.hidden { display: none; }
+
+/* ── Header / Counter ─────────────────────── */
+.ganancias-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.ganancias-date {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.ganancias-counter {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.gc-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.gc-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.gc-value {
+    font-size: 1.45rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text-primary);
+}
+
+.gc-value.pos  { color: #4ade80; }
+.gc-value.neg  { color: #f87171; }
+.gc-value.zero { color: var(--text-secondary); }
+
+/* Neto: número más prominente */
+.gc-value.gc-neto {
+    font-size: 1.9rem;
+}
+
+.gc-divider {
+    width: 1px;
+    height: 38px;
+    background: rgba(255,255,255,0.12);
+}
+
+
+
+/* ── Grid ─────────────────────────────────── */
+.ganancias-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.38rem;
+}
+
+/* 5-column layout for extendida (77 numbers: 00 + 0-75) */
+.ganancias-grid--wide {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.28rem;
+}
+
+.ganancias-grid--wide .ganancias-top-pair .ganancias-cell {
+    width: calc(20% - 0.12rem);
+    flex: 0 0 calc(20% - 0.12rem);
+}
+
+.ganancias-grid--wide .ganancias-cell {
+    min-height: 72px;
+    padding: 0.35rem 0.18rem 0.3rem;
+}
+
+.ganancias-grid--wide .gan-num {
+    font-size: 0.9rem;
+}
+
+.ganancias-grid--wide .gan-animal {
+    font-size: 0.5rem;
+}
+
+.ganancias-grid--wide .gan-amount-input {
+    max-width: 54px;
+    font-size: 0.7rem;
+    padding: 0.22rem 0.25rem;
+}
+
+.ganancias-top-pair {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    gap: 0.38rem;
+}
+
+.ganancias-top-pair .ganancias-cell {
+    width: calc(33.333% - 0.13rem);
+    flex: 0 0 calc(33.333% - 0.13rem);
+}
+
+/* ── Celda individual ─────────────────────── */
+.ganancias-cell {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 0.55rem;
+    padding: 0.5rem 0.3rem 0.45rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.18rem;
+    transition: border-color 0.15s, background 0.15s;
+    min-height: 82px;
+}
+
+.ganancias-cell.has-bet {
+    background: rgba(139,92,246,0.08);
+    border-color: rgba(139,92,246,0.35);
+}
+
+.gan-num {
+    font-size: 1.0rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.gan-animal {
+    font-size: 0.58rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.2;
+    min-height: 1.5em;
+}
+
+/* ── Input de monto ───────────────────────── */
+.gan-amount-input {
+    width: 100%;
+    max-width: 72px;
+    padding: 0.3rem 0.35rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 0.4rem;
+    color: var(--text-primary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: inherit;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    margin-top: 0.2rem;
+}
+
+.gan-amount-input::placeholder { color: rgba(255,255,255,0.2); }
+
+.gan-amount-input:focus {
+    border-color: rgba(139,92,246,0.6);
+    background: rgba(139,92,246,0.1);
+}
+
+.gan-amount-input:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: rgba(255,255,255,0.02);
+}
+
+.gan-amount-input.filled {
+    border-color: rgba(139,92,246,0.5);
+    background: rgba(139,92,246,0.1);
+    color: #c4b5fd;
+}
+
+/* ── Responsive ───────────────────────────── */
+@media (max-width: 420px) {
+    .ganancias-cell { min-height: 70px; padding: 0.4rem 0.2rem; }
+    .gan-num { font-size: 0.88rem; }
+    .gan-animal { font-size: 0.52rem; }
+    .gan-amount-input { max-width: 58px; font-size: 0.72rem; }
+}
+
+@media (max-width: 768px) {
+    /* Extra bottom padding so the help bubble doesn't cover the last row */
+    .ganancias-grid {
+        padding-bottom: 4rem;
+    }
+}
+
+/* ── Sub-tabs ────────────────────────────────────────────── */
+.gan-subtabs {
+    display: flex;
+    gap: 0.35rem;
+    padding: 0.35rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.gan-subtab-btn {
+    flex: 1;
+    padding: 0.52rem 0.4rem;
+    border-radius: 0.55rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.gan-subtab-btn.active {
+    background: rgba(139,92,246,0.2);
+    color: #c4b5fd;
+}
+
+.gan-subtab-btn:hover:not(.active) {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary);
+}
+
+/* ── Stat cards (Estadísticas) ───────────────────────────── */
+.gan-stat-card {
+    padding: 0.75rem 0.5rem;
+    border-radius: 0.65rem;
+    border: 1px solid;
+    text-align: center;
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.08);
+}
+.gan-stat-card.red   { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.25); }
+.gan-stat-card.green { background: rgba(74,222,128,0.08);  border-color: rgba(74,222,128,0.25);  }
+
+.gan-stat-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.3rem;
+}
+
+.gan-stat-val {
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+/* ── Gráfica horizontal de barras ────────────────────────── */
+.gan-chart-wrap {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 0.75rem;
+    padding: 0.85rem 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.gan-chart-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.6rem;
+}
+
+.gan-chart-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.32rem;
+}
+
+.gan-chart-lbl {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    width: 42px;
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.gan-chart-bar-wrap {
+    flex: 1;
+    height: 14px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.gan-chart-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    min-width: 2px;
+}
+
+.gan-chart-val {
+    font-size: 0.72rem;
+    font-weight: 700;
+    width: 72px;
+    flex-shrink: 0;
+    text-align: right;
+}
+
+/* ── Tabla detalle del día (Estadísticas) ─────────────────── */
+.gan-detail-row {
+    display: grid;
+    grid-template-columns: 52px 28px 1fr 68px 80px 68px;
+    gap: 0.3rem;
+    align-items: center;
+    padding: 0.38rem 0.5rem;
+    border-radius: 0.4rem;
+    font-size: 0.78rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.gan-detail-row:hover { background: rgba(255,255,255,0.03); }
+
+.gan-dr-hour   { color: var(--text-secondary); font-weight: 600; }
+.gan-dr-num    { font-weight: 800; color: var(--text-primary); text-align: center; }
+.gan-dr-animal { color: var(--text-secondary); font-size: 0.72rem; }
+.gan-dr-bet    { text-align: right; }
+.gan-dr-res    { text-align: center; font-size: 0.75rem; }
+.gan-dr-gain   { text-align: right; font-weight: 700; }
+
+/* ── Historial table ──────────────────────────────────────── */
+.gan-hist-controls {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.gan-hist-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+}
+
+.gan-hist-table th {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    text-align: right;
+}
+.gan-hist-table th:first-child { text-align: left; }
+
+.gan-hist-table td {
+    padding: 0.52rem 0.6rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: var(--text-primary);
+    text-align: right;
+}
+.gan-hist-table td:first-child { text-align: left; }
+
+.gan-hist-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+.gan-hist-today {
+    background: rgba(139,92,246,0.07) !important;
+}
+.gan-hist-today td:first-child::after {
+    content: ' •';
+    color: #c4b5fd;
+    font-weight: 900;
+}

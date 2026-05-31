@@ -1,0 +1,278 @@
+@media (max-width: 768px) {
+    :root {
+        --bg-color: #0f172a;
+        --card-bg: #1e293b;
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --success: #10b981;
+        --danger: #ef4444;
+        --border: #334155;
+        --glass: rgba(30, 41, 59, 0.7);
+    }
+    
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 0.5rem;
+    }
+    
+    .app-container {
+        width: 100%;
+        background: var(--bg-color);
+        padding-bottom: 2rem;
+    }
+    
+    header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        padding: 1rem 0;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .highlight {
+        color: var(--accent);
+    }
+    
+    .subtitle {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+    
+    /* Mobile Tabs - Stacked */
+    /* Mobile Tabs - Replaced by Dropdown */
+    .tabs {
+        display: none !important;
+    }
+    
+    
+    
+    .mobile-nav-dropdown {
+        width: 100%;
+        padding: 0.75rem;
+        background: var(--bg-color);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-family: inherit;
+        outline: none;
+    }
+    
+    .mobile-nav-dropdown:focus {
+        border-color: var(--accent);
+    }
+    
+    .tab-btn {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        width: 100%;
+        text-align: center;
+        font-size: 1rem;
+    }
+    
+    .tab-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+    }
+    
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(5px);
+        }
+    
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Mobile Input Section */
+    .date-picker-container {
+        background: var(--card-bg);
+        padding: 1rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        border: 1px solid var(--border);
+    }
+    
+    input[type="date"] {
+        background: var(--bg-color);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        font-family: inherit;
+        width: 100%;
+        font-size: 1rem;
+    }
+    
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        /* 3 columns for mobile */
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .time-slot {
+        background: var(--card-bg);
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .time-label {
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+    
+    .number-input {
+        background: var(--bg-color);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 1.2rem;
+        text-align: center;
+        width: 100%;
+        font-weight: 700;
+    }
+    
+    .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .primary-btn,
+    .secondary-btn {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        font-family: inherit;
+        width: 100%;
+        font-size: 1rem;
+    }
+    
+    .primary-btn {
+        background: var(--accent);
+        color: white;
+    }
+    
+    .secondary-btn {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+    }
+    
+    /* Mobile Analysis */
+    .analysis-controls {
+        background: var(--card-bg);
+        padding: 1rem;
+        border-radius: 0.75rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    select {
+        background: var(--bg-color);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+        width: 100%;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        /* Single column for stats cards on mobile */
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+    
+    .stat-card {
+        background: var(--card-bg);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    /* Mobile History */
+    .history-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .table-wrapper {
+        overflow-x: auto;
+        background: var(--card-bg);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border);
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8rem;
+    }
+    
+    th,
+    td {
+        padding: 0.5rem;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+        min-width: 40px;
+    }
+}
