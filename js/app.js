@@ -584,6 +584,11 @@ function selectAppType(type) {
         var cfg2 = APP_CONFIGS[currentAppType];
         _syncModeUI(currentMode, cfg2);
     }
+
+    // Disparar sincronización silenciosa automática al entrar
+    if (typeof autoSyncAllModes === 'function') {
+        autoSyncAllModes();
+    }
 }
 
 function goHome() {
@@ -2045,6 +2050,58 @@ if (syncWebBtn) {
     });
 }
 
+// Auto-sync function called when entering an App Type
+async function autoSyncAllModes() {
+    if (!currentAppType || !APP_CONFIGS[currentAppType]) return;
+    
+    // Auto-sync solo los modos de la categoría actual
+    const modes = APP_CONFIGS[currentAppType].modes;
+    let totalAdded = 0;
+    
+    for (const mode of modes) {
+        try {
+            const url = SERVIDOR_SYNC + 'sync_' + mode + '.json?t=' + Date.now();
+            const response = await fetch(url);
+            if (!response.ok) continue;
+
+            const data = await response.json();
+            if (typeof data !== 'object' || data === null || Array.isArray(data)) continue;
+
+            const dbKey = 'lottery_data_' + mode;
+            const imported = data[dbKey] ? data[dbKey] : data;
+            
+            let targetDB = (mode === currentMode) ? db : JSON.parse(localStorage.getItem(dbKey) || '{}');
+            let addedCount = 0;
+            
+            for (let date in imported) {
+                if (!targetDB[date]) targetDB[date] = {};
+                for (let h in imported[date]) {
+                    if (targetDB[date][h] !== imported[date][h]) {
+                        targetDB[date][h] = imported[date][h];
+                        addedCount++;
+                    }
+                }
+            }
+            if (addedCount > 0) {
+                totalAdded += addedCount;
+                if (mode === currentMode) {
+                    db = targetDB; // Asegurar que la BD local en memoria esté actualizada
+                }
+                localStorage.setItem(dbKey, JSON.stringify(targetDB));
+            }
+        } catch(e) {
+            console.warn('Sincronización silenciosa falló para', mode, e);
+        }
+    }
+    
+    if (totalAdded > 0) {
+        renderHistory();
+        loadDayData(currentDate);
+        UI.showToast('¡Sincronización automática completa! ' + totalAdded + ' nuevos resultados encontrados.', 'success');
+        if (typeof updateGlobalNeto === 'function') updateGlobalNeto();
+    }
+}
+
 importBtn.addEventListener('click', function() { importFile.click(); });
 
 
@@ -2650,19 +2707,21 @@ async function updatePatternRecommendations() {
     const dayData = db[currentDate] || {};
     const numbersToday = new Set(Object.values(dayData).filter(n => n && n.trim() !== '').map(n => NumberUtils.normalize(n)));
 
-    // If no numbers yet, show placeholder
-    if (numbersToday.size < 2) {
+    // Si no hay suficientes números, mostrar placeholder
+    var minNums = currentAppType === 'extendida' ? 1 : 2;
+    if (numbersToday.size < minNums) {
         mainContainer.style.display = 'block';
-        container.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.9rem;">Ingresa al menos 2 números hoy para buscar patrones...</span>';
+        container.innerHTML = `<span style="color: var(--text-secondary); font-size: 0.9rem;">Ingresa al menos ${minNums} número${minNums > 1 ? 's' : ''} hoy para buscar patrones...</span>`;
         return;
     }
 
     // Cache patterns if not already done (lazy load)
     if (!cachedPatterns) {
         try {
-            // FIX #4: Pass currentDate explicitly so analysis window is anchored to selected date
             var patternDaysCache = currentAppType === 'extendida' ? 90 : 60;
-    cachedPatterns = await findPatternsAsync(patternDaysCache, 5, currentDate);
+            var minFreqCache    = currentAppType === 'extendida' ? 5 : 5;
+            var patSizesCache   = currentAppType === 'extendida' ? [2] : [5, 4, 3];
+            cachedPatterns = await findPatternsAsync(patternDaysCache, minFreqCache, patSizesCache, currentDate);
         } catch (e) {
             console.error("Error fetching patterns for recommendation:", e);
             return;
@@ -2682,8 +2741,10 @@ async function updatePatternRecommendations() {
         // Let's show if at least 2 numbers from the pattern are present today AND there are missing numbers.
         // Also simpler patterns (size 3) need 2 present. Size 4 needs 2 or 3. Size 5 needs 3 or 4.
 
-        // Threshold: at least 50% match? or simple >= 2 matches?
-        if (intersection.size >= 2 && intersection.size < patternSet.size) {
+        // Para extendida (pares de 2): con 1 número presente ya se recomienda el faltante
+        // Para tradicional (grupos 3-5): se necesitan al menos 2 presentes
+        var minIntersect = currentAppType === 'extendida' ? 1 : 2;
+        if (intersection.size >= minIntersect && intersection.size < patternSet.size) {
             // Correct variable:
             const missingCorrect = pattern.numbers.filter(x => !numbersToday.has(x));
 
