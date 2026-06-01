@@ -564,6 +564,7 @@ function selectAppType(type) {
     db = safeLoadData(_dbKey());
     sortedDatesCache = null;
     cachedPatterns   = null;
+    cachedCruces     = null;
 
     // Rebuild dynamic sidebar modes
     _buildSidebarModes(cfg);
@@ -600,6 +601,7 @@ function goHome() {
     db = {};
     sortedDatesCache = null;
     cachedPatterns   = null;
+    cachedCruces     = null;
     // Show launcher
     showLauncher();
 }
@@ -816,12 +818,22 @@ function setupTabs() {
             'analysis':      '&#128202; An&#225;lisis de Asociados',
             'jaula':         '&#127922; Jaula',
             'patterns':      '&#9733; Patrones',
+            'cruces':        '&#128274; Cruces',
             'history':       '&#128218; Historial',
             'biblioteca':    '&#9874; Biblioteca',
             'fechas':        '&#128336; Fechas',
             'ganancias':     '&#128200; Ganancias'
         };
         var tabLabelEl = document.getElementById('active-tab-label');
+        if (tabId === 'analysis') {
+            populateTargetSelect();
+        } else if (tabId === 'patterns') {
+            analyzePatterns();
+        } else if (tabId === 'cruces') {
+            analyzeCruces();
+        } else if (tabId === 'ganancias') {
+            renderGanancias();
+        }
         if (tabLabelEl) tabLabelEl.innerHTML = TAB_LABELS[tabId] || tabId;
 
         // Close sidebar when a tab is selected
@@ -836,6 +848,7 @@ function setupTabs() {
         }
         if (tabId === 'jaula') renderJaula();
         if (tabId === 'patterns') analyzePatterns();
+        if (tabId === 'cruces') analyzeCruces();
         if (tabId === 'biblioteca') renderBiblioteca();
         if (tabId === 'fechas') setupFechas();
         if (tabId === 'ganancias') renderGanancias();
@@ -2152,8 +2165,10 @@ importFile.addEventListener('change', function(e) {
             UI.confirm('Esto reemplazar\u00e1 tus datos actuales (' + keys.length + ' d\u00edas encontrados). \u00bfContinuar?', function() {
                 db = imported;
                 localStorage.setItem('lottery_data_' + currentMode, JSON.stringify(db));
+                db = {};
                 sortedDatesCache = null;
                 cachedPatterns = null;
+                cachedCruces = null;
                 renderHistory();
                 loadDayData(currentDate);
                 UI.showToast('Datos importados correctamente. ' + keys.length + ' dias cargados.', 'success');
