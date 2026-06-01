@@ -42,6 +42,11 @@
             <p style="color: #f87171; margin: 0 0 1rem 0; font-weight: 600;">Cédula incorrecta o no autorizada.</p>
             <a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="display: inline-block; background: #25D366; color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s;">📲 Contactar por WhatsApp</a>
         </div>
+        
+        <div style="margin-top: 2rem; font-size: 0.8rem; color: #64748b; letter-spacing: 0.5px;">
+            Lottery Tracker &copy; 2026<br>
+            Creado por Arafel
+        </div>
     </div>
 </div>
 
@@ -81,7 +86,8 @@
                 <div class="launcher-card-arrow">&#8250;</div>
             </button>
         </div>
-        <p class="launcher-footer">Tus datos se guardan localmente &bull; Sin conexi&#243;n a internet requerida</p>
+        <p class="launcher-footer">Tus datos se guardan localmente &bull; Sin conexi&#243;n a internet requerida<br>
+        <span style="font-size: 0.8em; opacity: 0.7; margin-top: 0.5rem; display: block;">Lottery Tracker &copy; 2026 - Creado por Arafel</span></p>
     </div>
 </div>
 
@@ -159,6 +165,11 @@
                 <span class="tab-icon">&#128200;</span> Ganancias
             </button>
         </nav>
+        
+        <div style="margin-top: auto; padding: 1.5rem; text-align: center; font-size: 0.75rem; color: var(--text-secondary); border-top: 1px solid var(--border-color);">
+            Lottery Tracker &copy; 2026<br>
+            Creado por Arafel
+        </div>
     </nav>
     <div class="app-container">
         <!-- Banner de Vencimiento -->
@@ -612,6 +623,18 @@
                         </div>
 
                         <div class="guide-section">
+                            <h5>&#128256; Cruces y Saltos</h5>
+                            <p>Analiza los últimos <strong>60 días</strong> de historial en <strong>todas</strong> las loterías de tu grupo para detectar animales que tienden a aparecer más de una vez en el mismo día, ya sea en la misma lotería o en otra distinta.</p>
+                            <ul>
+                                <li><strong>&#128308; Cruce:</strong> El animal aparece en una lotería diferente el mismo día (ej: sale en Lotto a las 8am y en Selva a las 3pm)</li>
+                                <li><strong>&#128995; Repetición:</strong> El animal aparece en la misma lotería más de una vez en el día</li>
+                                <li><strong>Ruta de salto:</strong> Cada animal muestra sus caminos más frecuentes, ej: <em>lotto &#10132; selva (6)</em></li>
+                                <li><strong>Probabilidad:</strong> Cada ruta incluye el porcentaje de veces que se cumplió con respecto al total de saltos del animal</li>
+                                <li><strong>Recomendación en Número Fuerte:</strong> Cuando un animal ya salió hoy, aparece automáticamente una alerta con las loterías a las que históricamente ha cruzado</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
                             <h5>&#9874; Biblioteca de Animales</h5>
                             <p>Consulta la tabla completa de correspondencia entre los números (0-36 y 00) y su animal asignado.</p>
                             <ul>
@@ -684,106 +707,37 @@
                     </div>
                     <!-- Updates Section -->
                     <div id="updates-content" class="help-content">
-                        <h4>Última Actualización - v1.0.20</h4>
-                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Fecha: 25 de Mayo, 2026</p>
+                        <h4>Última Actualización - v1.0.21</h4>
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Fecha: 1 de Junio, 2026</p>
 
                         <div class="guide-section">
-                            <h5>&#128276; Nuevo Sistema de Notificaciones y Confirmaciones</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Se eliminaron todas las molestas alertas bloqueantes del navegador. El sistema ahora usa dos mecanismos modernos: <strong>Toasts</strong> (notificaciones flotantes que desaparecen solas) para avisos informativos, y <strong>Cuadros de Confirmaci&#243;n Personalizados</strong> (modales estilizados con botones Aceptar/Cancelar) para acciones cr&#237;ticas como limpiar datos o importar archivos.</p>
+                            <h5>&#128256; Análisis de Cruces y Saltos</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Nueva herramienta para rastrear "Cruces" (saltos de una lotería a otra) y "Repeticiones" (mismo animal en la misma lotería) el mismo día. Incluye un podio visual y porcentajes de probabilidad de rutas en los últimos 60 días.</p>
                         </div>
 
                         <div class="guide-section" style="margin-top:1rem;">
-                            <h5>⚡ Optimización de Rendimiento Extremo</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Se corrigió un cuello de botella matemático en el cálculo de "Nombres Fuertes". Ahora el sistema procesa miles de datos para la modalidad Extendida sin congelar la pestaña, siendo instantáneo al cambiar de fechas.</p>
+                            <h5>⚡ Predicción en Número Fuerte</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Al revisar tus números del día, el sistema genera automáticamente un panel de "Posibles Cruces Hoy" mostrándote a qué lotería tienen mayor tendencia a migrar los animales que ya salieron.</p>
                         </div>
 
                         <div class="guide-section" style="margin-top:1rem;">
-                            <h5>🛡️ Scraper Python Blindado</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">El bot de sincronización ahora tiene un sistema anti-cuelgues (timeout) y un mejor manejo de errores de red, garantizando que el proceso de fondo nunca se quede atascado consumiendo memoria.</p>
+                            <h5>🤖 Carga y Sincronización Invisible</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Mejoramos el motor de la app para que la Sincronización Automática, los Cálculos de Cruces y la Pirámide de Fechas se carguen de forma paralela y silenciosa en segundo plano sin interrumpir tu navegación.</p>
                         </div>
-
-                        <div class="guide-section" style="margin-top:1rem;">
-                            <h5>💾 Exportación Segura de Historial</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Se modernizó el motor de exportación de datos para garantizar que el 100% de tu historial de ganancias y registros se respalde sin pérdida de información.</p>
-                        </div>
-
-                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 1.5rem 0;">
-
-                        <h4>Historial Reciente - v1.0.20</h4>
-                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Fecha: 25 de Mayo, 2026</p>
-
-                        <div class="guide-section">
-                            <h5>&#129302; Bot de Sincronizaci&#243;n Autom&#225;tica (Escritorio)</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">El sistema ahora cuenta con un bot local de Windows (<code>master_sync.bat</code>) que se ejecuta silenciosamente cada hora (8:12 AM - 7:12 PM) en tu PC. Este bot descarga los resultados y los sube autom&#225;ticamente a tu cuenta de GitHub, salt&#225;ndose los bloqueos de seguridad anti-bots de los servidores p&#250;blicos.</p>
-                        </div>
-
-                        <div class="guide-section">
-                            <h5>&#127758; Nuevo Scraper por URL Diaria</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">El sistema ahora descarga los resultados accediendo a una URL por d&iacute;a (<code>loteriadehoy.com/animalito/[loter&iacute;a]/resultados/[fecha]/</code>), lo que elimina los errores de sorteos faltantes que ocurr&iacute;an con la descarga semanal anterior.</p>
-                        </div>
-
-                        <div class="guide-section" style="margin-top:1rem;">
-                            <h5>&#128290; Detecci&oacute;n de Animales por N&uacute;mero</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">En lugar de buscar el nombre del animal en el texto, el scraper ahora extrae el n&uacute;mero que aparece al inicio de cada entrada (ej. <em>"15 Perro"</em>), siendo m&aacute;s robusto frente a variaciones ortogr&aacute;ficas o errores tipogr&aacute;ficos.</p>
-                        </div>
-
-                        <div class="guide-section" style="margin-top:1rem;">
-                            <h5>&#127891; Modo Extendida — Loterias de 77 N&uacute;meros</h5>
-                            <ul>
-                                <li><strong>Gu&aacute;charo Activo y Monje Millonario</strong> ahora reconocen su formato de 77 n&uacute;meros (0-75 + 00).</li>
-                                <li><strong>"Patrono"</strong> en el Monje Millonario es correctamente identificado como el n&uacute;mero 75.</li>
-                                <li>La cuadr&iacute;cula de Ganancias en modo extendido muestra 5 columnas para acomodar todos los n&uacute;meros.</li>
-                            </ul>
-                        </div>
-
-                        <div class="guide-section" style="margin-top:1rem;">
-                            <h5>&#128241; Correcciones de Vista M&oacute;vil</h5>
-                            <ul>
-                                <li><strong>Versi&oacute;n portable restaurada:</strong> El archivo <code>mobile.css</code> no estaba siendo incluido en la versi&oacute;n portable, causando que toda la interfaz se viera con estilos de escritorio en el tel&eacute;fono.</li>
-                                <li><strong>Burbuja de ayuda reubicada:</strong> En m&oacute;vil, el bot&oacute;n de ayuda se mueve a la esquina inferior <em>izquierda</em> para no tapar el n&uacute;mero 36 (o 75 en extendida) en la cuadr&iacute;cula de Ganancias.</li>
-                                <li><strong>Padding inferior en Ganancias:</strong> La &uacute;ltima fila de la cuadr&iacute;cula ya no queda oculta detr&aacute;s de la burbuja.</li>
-                                <li><strong>Men&uacute; de ayuda corregido:</strong> Se corrigieron etiquetas HTML mal estructuradas que provocaban que las secciones se encimaran y no permitieran el desplazamiento.</li>
-                            </ul>
-                        </div>
-
-                        <div class="guide-section" style="margin-top:1rem;">
-                            <h5>&#9200; Sugerencia Autom&aacute;tica de Hora en Ganancias</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Al entrar a la pesta&ntilde;a Ganancias sin una hora seleccionada, el sistema detecta cu&aacute;l es el pr&oacute;ximo sorteo disponible bas&aacute;ndose en la hora actual y qu&eacute; sorteos ya tienen apuestas registradas. La selecci&oacute;n se puede cambiar manualmente en cualquier momento.</p>
-                        </div>
-
-                        <div class="guide-section">
-                            <h5>&#128270; B&#250;squeda de Patrones &mdash; Correcci&#243;n de Falso Positivo</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Al buscar el n&#250;mero <strong>0</strong> (El Delf&#237;n), el buscador ya no resaltaba err&#243;neamente tarjetas que conten&#237;an el <strong>00</strong> (La Tortuga). La condici&#243;n de relleno con cero ahora aplica solo para los n&#250;meros del 1 al 9.</p>
-                        </div>
-
-                        <div class="guide-section" style="margin-top:1rem;">
-                            <h5>&#128295; Correcciones de Lógica y Matemáticas (Auditor&#237;a)</h5>
-                            <ul>
-                                <li><strong>Bug NaN eliminado:</strong> Código muerto en Ganancias que operaba sobre texto formateado, generando resultados inválidos.</li>
-                                <li><strong>Umbral Jaula corregido:</strong> Números con exactamente 6 días sin salir quedaban fuera de la Jaula. Corregido a <em>6 o más días</em>.</li>
-                                <li><strong>Búsqueda Historial normalizada:</strong> Buscar <code>5</code> y <code>05</code> ahora devuelven los mismos resultados.</li>
-                                <li><strong>Fecha de referencia en Patrones:</strong> Se pasa explícitamente la fecha activa al analizador para garantizar coherencia.</li>
-                                <li><strong>localStorage estable:</strong> La iteración usa <code>Object.keys()</code> en lugar de índices numéricos, compatible con todos los navegadores.</li>
-                                <li><strong>Alerta no bloqueante:</strong> Reemplazado el <code>alert()</code> al inicio por notificación diferida con <code>setTimeout</code>.</li>
-                            </ul>
-                        </div>
-
-                        <div class="guide-section" style="margin-top:1rem;">
-                            <h5>&#127912; Auditor&#237;a y Limpieza de CSS</h5>
-                            <ul>
-                                <li><strong>mode-selector.css duplicado:</strong> Eliminado el enlace doble en <code>index.html</code> que lo cargaba dos veces.</li>
-                                <li><strong>Variable indefinida corregida:</strong> <code>var(--text)</code> no existe; corregido a <code>var(--text-primary)</code> en el buscador de Número Fuerte.</li>
-                                <li><strong>transition:all eliminado:</strong> Las tres propiedades <code>transition: all</code> en el menú de ayuda reemplazadas por propiedades específicas para mejor rendimiento.</li>
-                                <li><strong>Transición de Patrones unificada:</strong> Dos reglas <code>.pattern-card</code> en conflicto fusionadas; se recupera la animación de <code>box-shadow</code> que había desaparecido.</li>
-                                <li><strong>CSS muerto eliminado:</strong> Reglas de posicionamiento <code>top/left</code> en los spans del hamburger (el botón usa flexbox, no position:absolute).</li>
-                                <li><strong>stat-card unificado:</strong> Dos definiciones en conflicto de <code>.stat-card</code> en <code>style.css</code> fusionadas en una sola.</li>
-                            </ul>
-                        </div>
-
                     </div>
                     <!-- History Log Section -->
                     <div id="history-log-content" class="help-content">
                         <h4>Hist&#243;rico de Actualizaciones</h4>
+
+                        <div class="guide-section">
+                            <h5 style="color: var(--accent);">v1.0.21 &mdash; Cruces y Saltos, Sincronización Automática</h5>
+                            <p style="font-size: 0.9em; color: var(--text-secondary);">1 de Junio, 2026</p>
+                            <ul>
+                                <li><strong>&#128256; Nueva sección: Cruces y Saltos:</strong> Detecta animales propensos a cruzar entre loterías el mismo día, con ranking, rutas detalladas y probabilidades.</li>
+                                <li><strong>&#128256; Recomendación en Número Fuerte:</strong> Al ver un animal que ya salió hoy, el sistema sugiere automáticamente en qué lotería podría cruzar.</li>
+                                <li><strong>&#128257; Sincronización automática:</strong> Al entrar a un tipo de lotería, la app sincroniza silenciosamente todas las loterías del grupo sin que el usuario tenga que pulsar nada.</li>
+                            </ul>
+                        </div>
 
                         <div class="guide-section">
                             <h5 style="color: var(--accent);">v1.0.20 &mdash; Scraper Diario, Modo Extendido y Mejoras M&oacute;vil</h5>
@@ -791,9 +745,9 @@
                             <ul>
                                 <li><strong>&#127758; Scraper por URL diaria:</strong> Descarga resultados d&iacute;a a d&iacute;a eliminando errores de sorteos faltantes.</li>
                                 <li><strong>&#128290; Detecci&oacute;n por n&uacute;mero:</strong> El scraper extrae el n&uacute;mero al inicio de cada entrada en lugar de buscar el nombre del animal.</li>
-                                <li><strong>&#127891; Modo Extendida (77 n&uacute;meros):</strong> Gu&aacute;charo Activo y Monje Millonario con soporte completo; "Patrono" identificado como n&uacute;mero 75.</li>
+                                <li><strong>&#127891; Modo Extendida (77 n&uacute;meros):</strong> Gu&aacute;charo Activo y Monje Millonario con soporte completo.</li>
                                 <li><strong>&#128241; mobile.css restaurado:</strong> La versi&oacute;n portable ahora incluye correctamente todos los estilos m&oacute;viles.</li>
-                                <li><strong>&#128241; Burbuja de ayuda reubicada:</strong> En m&oacute;vil pasa a la esquina inferior izquierda para no tapar el &uacute;ltimo n&uacute;mero de la cuadr&iacute;cula de Ganancias.</li>
+                                <li><strong>&#128241; Burbuja de ayuda reubicada:</strong> En m&oacutevil pasa a la esquina inferior izquierda.</li>
                                 <li><strong>&#9200; Sugerencia autom&aacute;tica de hora:</strong> Ganancias pre-selecciona el pr&oacute;ximo sorteo disponible al abrirse.</li>
                                 <li><strong>🛠️ Menú de ayuda corregido:</strong> Estructura HTML desalineada reparada para evitar solapamientos y restaurar el scroll.</li>
                             </ul>

@@ -1176,6 +1176,11 @@ function loadDayData(date) {
             label.textContent = name || '';
         }
     });
+
+    // Auto-pre-cargar las Fechas para que estén disponibles en Número Fuerte
+    if (typeof silentFechasInit === 'function') {
+        silentFechasInit(date);
+    }
 }
 
 function saveCurrentDay() {
@@ -1779,6 +1784,10 @@ function renderStrongNumbers() {
 
         // 3c. Renderizar la convergencia con los 3 sets completos
         renderConvergencia(fechaNums, assocRecommended, patternRecommended);
+
+        // Recomendación de cruces basada en el historial
+        renderCrucesEnNFuerte(_dayDataConv);
+
     }); // end .then()
 } // end renderStrongNumbers
 
@@ -2113,6 +2122,9 @@ async function autoSyncAllModes() {
         UI.showToast('¡Sincronización automática completa! ' + totalAdded + ' nuevos resultados encontrados.', 'success');
         if (typeof updateGlobalNeto === 'function') updateGlobalNeto();
     }
+    
+    // Pre-cargar caché de cruces de forma silenciosa para que estén listos en Número Fuerte
+    analyzeCruces(false);
 }
 
 importBtn.addEventListener('click', function() { importFile.click(); });
@@ -2970,6 +2982,15 @@ function setupSidebar() {
 let fechasActiveFilters = { horiz: true, horizRev: true, vert: true, diag: true };
 
 // Convierte YYYY-MM-DD -> DDMMYYYY y ejecuta el cálculo
+function silentFechasInit(isoDate) {
+    if (!isoDate) return;
+    var parts = isoDate.split('-');
+    if (parts.length !== 3) return;
+    var seed = parts[2] + parts[1] + parts[0];
+    currentPyramid   = buildPyramid(seed);
+    currentExtracted = extractNumbers(currentPyramid);
+}
+
 function autoRunFechas(isoDate) {
     var section = document.getElementById('fechas-section');
     if (!section || !section.dataset.fechasInit) return; // solo si ya fue inicializada
@@ -3889,4 +3910,362 @@ function updateGlobalNeto() {
         : 'Neto: -' + _globalFmt(net);
     badge.textContent = txt;
     badge.className   = 'global-neto-badge ' + cls;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CRUCES Y REPETICIONES
+// Detecta números que aparecen en más de una lotería o
+// se repiten en la misma lotería dentro del mismo día.
+// Analiza los últimos 60 días.
+// ═══════════════════════════════════════════════════════════
+
+let cachedCruces = null;
+
+async function analyzeCruces(render = true) {
+    const container = document.getElementById('cruces-results-container');
+    if (render && !container) return;
+
+    // Usar caché si existe
+    if (cachedCruces) {
+        if (render) renderCruces(cachedCruces);
+        return;
+    }
+
+    if (render) {
+        container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary);">⏳ Calculando cruces de los últimos 60 días...</div>';
+        // Pequeño delay para que se muestre el mensaje de carga
+        await new Promise(r => setTimeout(r, 50));
+    }
+
+    const daysToAnalyze = 60;
+    const modes = APP_CONFIGS[currentAppType] ? APP_CONFIGS[currentAppType].modes : [];
+    if (!modes.length) {
+        container.innerHTML = '<div style="padding:1rem;color:var(--text-secondary);">No hay loterías configuradas.</div>';
+        return;
+    }
+
+    const animalMap = currentAppType === 'extendida' ? EXT_ANIMAL_MAP : ANIMAL_MAP;
+
+    // ── 1. Cargar datos de TODAS las loterías del grupo ──
+    const allData = {};
+    const debugInfo = [];
+    modes.forEach(m => {
+        try {
+            // Para el modo actual, también incluir los datos en memoria
+            if (m === currentMode && db && Object.keys(db).length > 0) {
+                allData[m] = db;
+            } else {
+                const raw = localStorage.getItem('lottery_data_' + m);
+                allData[m] = raw ? JSON.parse(raw) : {};
+            }
+            debugInfo.push(m + ': ' + Object.keys(allData[m]).length + ' días');
+        } catch(e) {
+            allData[m] = {};
+            debugInfo.push(m + ': ERROR leyendo datos');
+        }
+    });
+
+    // ── 2. Recolectar todas las fechas disponibles ──
+    const allDatesSet = new Set();
+    Object.values(allData).forEach(modeDb => {
+        Object.keys(modeDb).forEach(d => {
+            if (d <= currentDate) allDatesSet.add(d);
+        });
+    });
+
+    let allDates = Array.from(allDatesSet).sort().reverse().slice(0, daysToAnalyze).reverse();
+
+    if (allDates.length === 0) {
+        container.innerHTML = `
+            <div style="padding:1rem;color:var(--text-secondary);background:var(--surface-light);border-radius:8px;">
+                <b>ℹ️ Sin datos suficientes</b><br><br>
+                No se encontraron resultados en las loterías de este grupo para los últimos 60 días.<br><br>
+                <small>Diagnóstico: ${debugInfo.join(' | ')}</small>
+            </div>`;
+        return;
+    }
+
+    // ── 3. Construir timeline por día y detectar saltos ──
+    const animalJumps = {}; // { numStr: { total, cruces, repeticiones, paths: { "lotto->selva": N } } }
+
+    allDates.forEach(date => {
+        // Construir todos los eventos del día ordenados cronológicamente
+        const dayEvents = [];
+        modes.forEach(mode => {
+            const dayData = allData[mode][date];
+            if (!dayData) return;
+            Object.keys(dayData).forEach(hour => {
+                const val = dayData[hour];
+                if (val === undefined || val === null || val === '') return;
+                const num = String(val).trim();
+                if (num === '' || num === '-') return;
+                const normalizedNum = num === '00' ? '00' : String(parseInt(num, 10));
+                dayEvents.push({ mode, hour: parseInt(hour, 10), num: normalizedNum });
+            });
+        });
+
+        // Ordenar por hora de menor a mayor
+        dayEvents.sort((a, b) => a.hour - b.hour);
+
+        // Recorrer eventos y registrar la primera aparición de cada número
+        // Si ya apareció antes en el día → es un salto
+        const seenToday = {}; // { num: { mode, hour } }
+
+        dayEvents.forEach(({ num, mode, hour }) => {
+            if (seenToday[num] !== undefined) {
+                const prev = seenToday[num];
+                // Solo cuenta si la hora es posterior (no el mismo sorteo)
+                if (hour > prev.hour) {
+                    if (!animalJumps[num]) {
+                        animalJumps[num] = { total: 0, cruces: 0, repeticiones: 0, paths: {} };
+                    }
+                    animalJumps[num].total++;
+                    const pathKey = prev.mode + '->' + mode;
+                    if (prev.mode === mode) {
+                        animalJumps[num].repeticiones++;
+                    } else {
+                        animalJumps[num].cruces++;
+                    }
+                    animalJumps[num].paths[pathKey] = (animalJumps[num].paths[pathKey] || 0) + 1;
+                }
+            }
+            // Actualizar última aparición (para que detecte el salto siguiente desde este punto)
+            seenToday[num] = { mode, hour };
+        });
+    });
+
+    cachedCruces = { animalJumps, animalMap, debugInfo, daysAnalyzed: allDates.length };
+    renderCruces(cachedCruces);
+}
+
+function renderCruces(data) {
+    const container = document.getElementById('cruces-results-container');
+    if (!container) return;
+
+    const { animalJumps, animalMap, debugInfo, daysAnalyzed } = data;
+
+    // Ordenar por total descendente
+    const ranking = Object.keys(animalJumps).map(num => {
+        const info = animalMap.find(a => a.num === num) || { name: '?' };
+        return { num, name: info.name, ...animalJumps[num] };
+    }).sort((a, b) => b.total - a.total);
+
+    // ── Leyenda y diagnóstico ──
+    let html = `
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+        <span style="display:inline-flex;align-items:center;gap:0.3rem;background:#3b82f620;color:#60a5fa;border:1px solid #3b82f640;padding:0.25rem 0.6rem;border-radius:20px;font-size:0.78rem;">
+            &#128308; Cruce = salta a otra lotería
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:0.3rem;background:#8b5cf620;color:#a78bfa;border:1px solid #8b5cf640;padding:0.25rem 0.6rem;border-radius:20px;font-size:0.78rem;">
+            &#128995; Repetición = misma lotería
+        </span>
+        <span style="margin-left:auto;font-size:0.72rem;color:var(--text-secondary);">&#128202; ${daysAnalyzed} días · ${debugInfo.join(' · ')}</span>
+    </div>`;
+
+    if (ranking.length === 0) {
+        html += '<div style="padding:1.5rem;color:var(--text-secondary);text-align:center;background:var(--surface-light);border-radius:10px;">No se detectaron cruces ni repeticiones en el período analizado.</div>';
+        container.innerHTML = html;
+        return;
+    }
+
+    // ── Top 3 podio ──
+    const podiumColors = [
+        { border: '#f59e0b', bg: 'rgba(245,158,11,0.1)', medal: '&#129351;' },
+        { border: '#9ca3af', bg: 'rgba(156,163,175,0.1)', medal: '&#129352;' },
+        { border: '#b45309', bg: 'rgba(180,83,9,0.1)',   medal: '&#129353;' }
+    ];
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-bottom:1.25rem;">';
+    podiumColors.forEach((p, i) => {
+        if (i >= ranking.length) { html += '<div></div>'; return; }
+        const item = ranking[i];
+        const pct = item.cruces > 0 ? Math.round(item.cruces / item.total * 100) : 0;
+        html += `<div style="background:${p.bg};border:1.5px solid ${p.border};border-radius:12px;padding:0.8rem 0.6rem;text-align:center;">
+            <div style="font-size:1.6rem;line-height:1;">${p.medal}</div>
+            <div style="font-weight:700;font-size:1.05rem;color:var(--text-primary);margin:0.3rem 0 0.1rem;">${item.num} &ndash; ${item.name}</div>
+            <div style="font-size:0.78rem;color:var(--text-secondary);">${item.total} saltos</div>
+            <div style="font-size:0.72rem;margin-top:0.2rem;">
+                <span style="color:#60a5fa;">${item.cruces} cruces</span>
+                <span style="color:var(--text-secondary);margin:0 0.25rem">&middot;</span>
+                <span style="color:#a78bfa;">${item.repeticiones} reps</span>
+            </div>
+        </div>`;
+    });
+    html += '</div>';
+
+    // ── Lista completa ──
+    html += '<div style="display:flex;flex-direction:column;gap:0.55rem;">';
+    ranking.forEach((item, index) => {
+        const pathEntries = Object.entries(item.paths).sort((a, b) => b[1] - a[1]);
+        const pathsHtml = pathEntries.map(([path, count]) => {
+            const [from, to] = path.split('->');
+            const isCruce = from !== to;
+            const pct = Math.round(count / item.total * 100);
+            const color = isCruce ? '#3b82f6' : '#8b5cf6';
+            const label = isCruce ? from + ' &#10132; ' + to : '&#128257; ' + from;
+            // Intensidad visual según porcentaje
+            const opacity = Math.max(0.15, pct / 100);
+            return `<span style="display:inline-flex;align-items:center;gap:0.3rem;
+                         background:rgba(${isCruce?'59,130,246':'139,92,246'},${opacity*0.35});
+                         color:${color};border:1px solid ${color}40;
+                         padding:0.2rem 0.55rem;border-radius:6px;font-size:0.75rem;margin:0.1rem;white-space:nowrap;">
+                ${label}
+                <b style="font-size:0.8rem;">${count}x</b>
+                <span style="background:${color}30;border-radius:4px;padding:0 0.25rem;font-size:0.68rem;">${pct}%</span>
+            </span>`;
+        }).join('');
+
+        const isTop3 = index < 3;
+        html += `<div style="background:var(--surface-color);border:1px solid ${isTop3 ? 'rgba(99,102,241,0.3)' : 'var(--border-color)'};border-radius:10px;padding:0.8rem;transition:box-shadow 0.2s;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+                <div style="display:flex;align-items:center;gap:0.55rem;">
+                    <div style="min-width:28px;height:28px;border-radius:8px;background:var(--primary-color);color:#fff;
+                                display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;flex-shrink:0;">#${index+1}</div>
+                    <div>
+                        <div style="font-weight:600;font-size:0.95rem;color:var(--text-primary);">${item.num} &ndash; ${item.name}</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);">
+                            <span style="color:#60a5fa;">${item.cruces} &#128308;</span>&nbsp;
+                            <span style="color:#a78bfa;">${item.repeticiones} &#128995;</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-weight:700;color:var(--primary-color);font-size:1.15rem;">${item.total}</div>
+                    <div style="font-size:0.68rem;color:var(--text-secondary);">saltos</div>
+                </div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:0.15rem;">${pathsHtml}</div>
+        </div>`;
+    });
+    html += '</div>';
+
+    container.innerHTML = html;
+}
+
+// ── Recomendación de Cruces en Número Fuerte ──
+function renderCrucesEnNFuerte(dayData) {
+    let el = document.getElementById('cruces-en-fuerte');
+    if (!el) {
+        const panel = document.getElementById('convergencia-panel');
+        if (!panel || !panel.parentNode) return;
+        el = document.createElement('div');
+        el.id = 'cruces-en-fuerte';
+        el.style.cssText = 'margin-top:1.5rem;';
+        panel.parentNode.insertBefore(el, panel.nextSibling);
+    }
+
+    if (!cachedCruces || !cachedCruces.animalJumps) {
+        el.style.display = 'none';
+        return;
+    }
+
+    const { animalJumps, animalMap } = cachedCruces;
+    const todayNums = Object.entries(dayData); 
+
+    const recs = [];
+    todayNums.forEach(([hour, rawNum]) => {
+        if (!rawNum || rawNum === '' || rawNum === '-') return;
+        const num = rawNum === '00' ? '00' : String(parseInt(rawNum, 10));
+        const jumpData = animalJumps[num];
+        if (!jumpData) return;
+
+        const crucePaths = Object.entries(jumpData.paths)
+            .filter(([path]) => {
+                const [from, to] = path.split('->');
+                return from === currentMode && to !== currentMode;
+            })
+            .sort((a, b) => b[1] - a[1]);
+
+        if (crucePaths.length === 0) return;
+
+        const animal = animalMap.find(a => a.num === num);
+        const animalName = animal ? animal.name : num;
+        recs.push({ num, name: animalName, hour: parseInt(hour), paths: crucePaths, total: jumpData.total });
+    });
+
+    if (recs.length === 0) {
+        el.style.display = 'none';
+        return;
+    }
+
+    el.style.display = '';
+
+    // Diseño Moderno UI/UX
+    let html = `
+    <div style="background:var(--surface-color); border:1px solid rgba(59,130,246,0.3); border-radius:14px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.12);">
+        
+        <!-- HEADER -->
+        <div style="background:linear-gradient(135deg, rgba(37,99,235,0.15) 0%, rgba(29,78,216,0.05) 100%); padding:1rem 1.25rem; border-bottom:1px solid rgba(59,130,246,0.15); display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+                <div style="background:#3b82f6; width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(59,130,246,0.4);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>
+                </div>
+                <div>
+                    <div style="font-weight:700; font-size:1.05rem; color:var(--text-primary); letter-spacing:0.3px;">Rutas de Cruce Hoy</div>
+                    <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.15rem;">Animales del día con tendencia a saltar de lotería</div>
+                </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.05); padding:0.3rem 0.6rem; border-radius:6px; font-size:0.7rem; color:var(--text-secondary); border:1px solid rgba(255,255,255,0.05);">
+                📊 ${cachedCruces.daysAnalyzed} días analizados
+            </div>
+        </div>
+
+        <!-- LISTA -->
+        <div style="padding:0.5rem;">
+    `;
+
+    recs.forEach((rec, index) => {
+        const topPaths = rec.paths.slice(0, 3);
+        const pathsHtml = topPaths.map(([path, count], pIdx) => {
+            const [, to] = path.split('->');
+            const pct = Math.round(count / rec.total * 100);
+            
+            const cfg = APP_CONFIGS[currentAppType];
+            const toLabel = cfg && cfg.modeLabels && cfg.modeLabels[to] ? cfg.modeLabels[to] : to.toUpperCase();
+            
+            // Colores basados en el modo de destino
+            let badgeBg, badgeText, badgeBorder;
+            if (to === 'lotto') { badgeBg = 'rgba(239,68,68,0.1)'; badgeText = '#ef4444'; badgeBorder = 'rgba(239,68,68,0.2)'; }
+            else if (to === 'granja') { badgeBg = 'rgba(16,185,129,0.1)'; badgeText = '#10b981'; badgeBorder = 'rgba(16,185,129,0.2)'; }
+            else if (to === 'selva') { badgeBg = 'rgba(245,158,11,0.1)'; badgeText = '#f59e0b'; badgeBorder = 'rgba(245,158,11,0.2)'; }
+            else { badgeBg = 'rgba(59,130,246,0.1)'; badgeText = '#3b82f6'; badgeBorder = 'rgba(59,130,246,0.2)'; }
+
+            // Destacar la ruta principal
+            const isPrimary = pIdx === 0;
+
+            return `<div style="display:flex; align-items:center; justify-content:space-between; background:${isPrimary ? badgeBg : 'transparent'}; border:1px solid ${isPrimary ? badgeBorder : 'transparent'}; border-radius:8px; padding:${isPrimary ? '0.4rem 0.6rem' : '0.2rem 0.6rem'}; margin-bottom:0.2rem;">
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                    <span style="color:${badgeText}; opacity:0.8; font-size:0.9rem;">➔</span>
+                    <span style="font-weight:${isPrimary?'600':'500'}; font-size:0.85rem; color:${badgeText};">${toLabel}</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <span style="font-weight:700; font-size:0.85rem; color:var(--text-primary);">${count}x</span>
+                    <div style="width:40px; text-align:right; font-size:0.75rem; color:var(--text-secondary); background:rgba(0,0,0,0.15); padding:0.15rem 0; border-radius:4px;">${pct}%</div>
+                </div>
+            </div>`;
+        }).join('');
+
+        const isLast = index === recs.length - 1;
+        
+        html += `
+        <div style="display:flex; padding:0.85rem; border-bottom:${isLast ? 'none' : '1px solid var(--border-color)'};">
+            <!-- Columna Izquierda: Animal -->
+            <div style="flex:0 0 100px; display:flex; flex-direction:column; justify-content:center; align-items:center; padding-right:1rem; border-right:1px solid rgba(255,255,255,0.05); margin-right:1rem;">
+                <div style="background:var(--surface-light); border:2px solid var(--primary-color); width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.3rem; color:var(--text-primary); box-shadow:0 2px 8px rgba(0,0,0,0.2); margin-bottom:0.4rem;">
+                    ${rec.num}
+                </div>
+                <div style="font-weight:600; font-size:0.8rem; color:var(--text-secondary); text-align:center; line-height:1.1;">${rec.name}</div>
+            </div>
+            
+            <!-- Columna Derecha: Rutas -->
+            <div style="flex:1;">
+                ${pathsHtml}
+            </div>
+        </div>`;
+    });
+
+    html += `
+        </div>
+    </div>`;
+    
+    el.innerHTML = html;
 }
