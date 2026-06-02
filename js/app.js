@@ -391,10 +391,9 @@ function startInactivityMonitor() {
         const now = Date.now();
         const last = parseInt(localStorage.getItem('session_last_activity') || inactivityLastTime);
         if (now - last > INACTIVITY_LIMIT_MS) {
-            document.getElementById('main-app').style.display = 'none';
+            forceLogout();
             document.getElementById('login-error').style.display = 'block';
             document.getElementById('login-error').innerHTML = '<p style="color: #f87171; margin: 0; font-weight: 600;">Sesión expirada por inactividad.</p>';
-            clearSession();
         }
     }, 30000); // Check every 30s
 }
@@ -407,16 +406,19 @@ function clearSession() {
 }
 
 function forceLogout() {
+    // Limpiar sesión
+    // Nota: Ya no borramos localStorage de ganancias aquí para que no se pierdan si no hay nube configurada
     clearSession();
     document.getElementById('main-app').style.display = 'none';
     document.getElementById('lottery-launcher').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('login-cedula').value = '';
     document.getElementById('login-error').style.display = 'none';
-    
+
     const subBanner = document.getElementById('sub-warning-banner');
     if (subBanner) subBanner.style.display = 'none';
 }
+
 function validateExpiration(expDateStr) {
     const today = new Date();
     today.setHours(0,0,0,0);
@@ -2768,10 +2770,26 @@ async function updatePatternRecommendations() {
         // Let's show if at least 2 numbers from the pattern are present today AND there are missing numbers.
         // Also simpler patterns (size 3) need 2 present. Size 4 needs 2 or 3. Size 5 needs 3 or 4.
 
+        const isValidationMode = currentViewMode === 'validation';
+        let shouldInclude = false;
+
         // Para extendida (pares de 2): con 1 número presente ya se recomienda el faltante
         // Para tradicional (grupos 3-5): se necesitan al menos 2 presentes
         var minIntersect = currentAppType === 'extendida' ? 1 : 2;
-        if (intersection.size >= minIntersect && intersection.size < patternSet.size) {
+
+        if (isValidationMode) {
+            // Mostrar patrones COMPLETADOS
+            if (intersection.size === patternSet.size) {
+                shouldInclude = true;
+            }
+        } else {
+            // Mostrar patrones PENDIENTES
+            if (intersection.size >= minIntersect && intersection.size < patternSet.size) {
+                shouldInclude = true;
+            }
+        }
+
+        if (shouldInclude) {
             // Correct variable:
             const missingCorrect = pattern.numbers.filter(x => !numbersToday.has(x));
 
@@ -2789,7 +2807,10 @@ async function updatePatternRecommendations() {
     // Render
     if (recommendations.length === 0) {
         mainContainer.style.display = 'block';
-        container.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.9rem;">No se encontraron coincidencias de patrones aún.</span>';
+        const msg = currentViewMode === 'validation' 
+            ? 'No hay patrones completados hoy.'
+            : 'No se encontraron coincidencias de patrones aún.';
+        container.innerHTML = `<span style="color: var(--text-secondary); font-size: 0.9rem;">${msg}</span>`;
         return;
     }
 
@@ -2846,7 +2867,10 @@ async function updatePatternRecommendations() {
                     ${chips}
                 </div>
                 <div style="margin-top:0.4rem;font-size:0.75rem;color:var(--text-secondary);">
-                    &#128994; = en juego hoy &nbsp;&nbsp; <span style="color:#4ade80;font-weight:700;">&#9650; = falta</span>
+                    ${currentViewMode === 'validation' 
+                        ? '&#128994; = completado hoy' 
+                        : '&#128994; = en juego hoy &nbsp;&nbsp; <span style="color:#4ade80;font-weight:700;">&#9650; = falta</span>'
+                    }
                 </div>
             </div>
         `;
@@ -3441,14 +3465,96 @@ var _GAN_HOURS = [8,9,10,11,12,13,14,15,16,17,18,19];
 
 // ── Persistencia ─────────────────────────────────────────
 function _ganKey()  { return 'ganancias_' + currentMode + '_' + currentDate; }
-function _ganLoad() { try { var r=localStorage.getItem(_ganKey()); _ganData=r?JSON.parse(r):{} } catch(e){_ganData={}} }
-function _ganSave() {
-    // Si no hay apuestas, eliminar la clave en vez de guardar {} vacio
-    if (!Object.keys(_ganData).length) {
-        localStorage.removeItem(_ganKey());
-    } else {
-        localStorage.setItem(_ganKey(), JSON.stringify(_ganData));
+// --- Módulo CloudDB para Ganancias ---
+const CloudDB = {
+    // TODO: El usuario debe colocar aquí sus credenciales de JSONBin.io
+    API_KEY: '', // Tu X-Master-Key
+    BIN_ID: '',  // Tu Bin ID
+    
+    _getStorageKey: function() {
+        const hash = localStorage.getItem('session_hash') || 'anonymous';
+        return 'cloud_gan_' + hash;
+    },
+
+    async load() {
+        const localHash = localStorage.getItem('session_hash');
+        if (!localHash) return {}; // Sin sesión, no hay datos
+        
+        if (!this.API_KEY || !this.BIN_ID) {
+            // Modo local temporal (se guarda en el dispositivo temporalmente)
+            const res = localStorage.getItem(this._getStorageKey());
+            return res ? JSON.parse(res) : {};
+        }
+
+        try {
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${this.BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': this.API_KEY }
+            });
+            const data = await response.json();
+            return data.record[localHash] || {};
+        } catch (e) {
+            console.error('CloudDB Load Error:', e);
+            UI.showToast('Error al cargar ganancias de la nube.', 'error');
+            return {};
+        }
+    },
+
+    async save(ganData) {
+        const localHash = localStorage.getItem('session_hash');
+        if (!localHash) return;
+
+        if (!this.API_KEY || !this.BIN_ID) {
+            // Modo local temporal
+            if (!Object.keys(ganData).length) {
+                localStorage.removeItem(this._getStorageKey());
+            } else {
+                localStorage.setItem(this._getStorageKey(), JSON.stringify(ganData));
+            }
+            return;
+        }
+
+        try {
+            // Obtener el DB completo
+            const getRes = await fetch(`https://api.jsonbin.io/v3/b/${this.BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': this.API_KEY }
+            });
+            let fullDB = await getRes.json();
+            let record = fullDB.record || {};
+
+            // Actualizar la parte del usuario
+            if (!Object.keys(ganData).length) {
+                delete record[localHash];
+            } else {
+                record[localHash] = ganData;
+            }
+
+            // Subir de vuelta
+            await fetch(`https://api.jsonbin.io/v3/b/${this.BIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': this.API_KEY
+                },
+                body: JSON.stringify(record)
+            });
+        } catch (e) {
+            console.error('CloudDB Save Error:', e);
+            UI.showToast('Error al guardar en la nube.', 'error');
+        }
     }
+};
+
+async function _ganLoad() { 
+    try { 
+        _ganData = await CloudDB.load(); 
+    } catch(e) {
+        _ganData = {};
+    } 
+}
+
+function _ganSave() {
+    // Llama a save en background sin bloquear
+    CloudDB.save(_ganData);
 }
 function _ganMult() { return currentAppType === 'extendida' ? 60 : 30; }
 
@@ -3707,8 +3813,8 @@ function _ganBuildHistorial() {
 }
 
 // ── RENDER PRINCIPAL ──────────────────────────────────────
-function renderGanancias() {
-    _ganLoad();
+async function renderGanancias() {
+    await _ganLoad();
 
     // AUTO-RECOMENDACIÓN: si no hay hora seleccionada, sugerir el próximo sorteo disponible
     if (!_ganHour) {

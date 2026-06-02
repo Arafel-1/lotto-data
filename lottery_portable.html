@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lottery Tracker Pro v1.0.21</title>
+    <title>Lottery Tracker Pro v1.0.22</title>
     <style>
 /* Source: css/style.css */
 :root {
@@ -4212,7 +4212,7 @@ input:checked+.slider:before {
         <div class="launcher-header">
             <h1 class="launcher-title">Lottery Tracker <span class="launcher-pro">Pro</span></h1>
             <p class="launcher-subtitle">Selecciona el tipo de loter&#237;a para continuar</p>
-            <div class="launcher-version">v1.0.21</div>
+            <div class="launcher-version">v1.0.22</div>
         </div>
         <div class="launcher-cards">
             <button class="launcher-card" id="btn-tradicional" onclick="selectAppType('tradicional')">
@@ -4320,8 +4320,17 @@ input:checked+.slider:before {
                 <span class="tab-icon">&#128200;</span> Ganancias
             </button>
         </nav>
-        
-        <div style="margin-top: auto; padding: 1.5rem; text-align: center; font-size: 0.75rem; color: var(--text-secondary); border-top: 1px solid var(--border-color);">
+        <div class="sidebar-footer-actions" style="margin-top: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span id="sub-badge" class="global-neto-badge zero" style="background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #60a5fa; display: none;">⏳ -- días</span>
+                <span id="global-neto-badge" class="global-neto-badge zero">Neto: 0</span>
+            </div>
+            <button id="logout-btn" onclick="forceLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; cursor: pointer; padding: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; font-family: inherit; font-weight: 600; transition: background 0.2s;" title="Cerrar sesión" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+                <span style="font-size: 1.2rem;">🚪</span> <span>Salir y Limpiar Dispositivo</span>
+            </button>
+        </div>
+
+        <div style="padding: 1rem; text-align: center; font-size: 0.75rem; color: var(--text-secondary);">
             Lottery Tracker &copy; 2026<br>
             Creado por Arafel
         </div>
@@ -4335,7 +4344,7 @@ input:checked+.slider:before {
         <header>
             <div class="header-inner">
                 <div class="header-brand">
-                    <h1>Lottery Tracker <span class="highlight">Pro</span> <span style="font-size:0.48em;color:var(--text-secondary);vertical-align:middle;">v1.0.21</span></h1>
+                    <h1>Lottery Tracker <span class="highlight">Pro</span> <span style="font-size:0.48em;color:var(--text-secondary);vertical-align:middle;">v1.0.22</span></h1>
                     <div class="subtitle-row">
                         <p class="subtitle">Sistema de An&#225;lisis y Registro Diario</p>
                         <span id="mode-indicator" class="mode-indicator-badge mode-lotto">&#127922; Lotto</span>
@@ -4343,11 +4352,6 @@ input:checked+.slider:before {
                 </div>
                 <div class="header-right">
                     <span class="active-tab-pill" id="active-tab-label">&#128221; Registro Diario</span>
-                    <span id="sub-badge" class="global-neto-badge zero" style="background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #60a5fa; display: none;">⏳ -- días</span>
-                    <button id="logout-btn" onclick="forceLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; cursor: pointer; padding: 0.25rem 0.6rem; display: flex; align-items: center; gap: 4px; border-radius: 2rem; font-family: inherit; font-weight: 600; margin-right: 1rem; transition: background 0.2s;" title="Cerrar sesión" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
-                        <span style="font-size: 1rem;">🚪</span> <span style="font-size: 0.85rem;">Salir</span>
-                    </button>
-                    <span id="global-neto-badge" class="global-neto-badge zero">Neto: 0</span>
                     <button class="hamburger-btn" id="hamburger-btn" aria-label="Abrir men&#250;"
                         style="display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:5px;width:44px;height:44px;min-width:44px;min-height:44px;padding:9px;flex-shrink:0;flex-grow:0;box-sizing:border-box;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);border-radius:0.6rem;cursor:pointer;">
                         <span style="display:block;width:100%;height:2px;background:rgba(139,92,246,0.85);border-radius:2px;flex-shrink:0;"></span>
@@ -4862,22 +4866,12 @@ input:checked+.slider:before {
                     </div>
                     <!-- Updates Section -->
                     <div id="updates-content" class="help-content">
-                        <h4>Última Actualización - v1.0.21</h4>
-                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Fecha: 1 de Junio, 2026</p>
+                        <h4>Última Actualización - v1.0.22</h4>
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Fecha: Próximamente</p>
 
                         <div class="guide-section">
-                            <h5>&#128256; Análisis de Cruces y Saltos</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Nueva herramienta para rastrear "Cruces" (saltos de una lotería a otra) y "Repeticiones" (mismo animal en la misma lotería) el mismo día. Incluye un podio visual y porcentajes de probabilidad de rutas en los últimos 60 días.</p>
-                        </div>
-
-                        <div class="guide-section" style="margin-top:1rem;">
-                            <h5>⚡ Predicción en Número Fuerte</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Al revisar tus números del día, el sistema genera automáticamente un panel de "Posibles Cruces Hoy" mostrándote a qué lotería tienen mayor tendencia a migrar los animales que ya salieron.</p>
-                        </div>
-
-                        <div class="guide-section" style="margin-top:1rem;">
-                            <h5>🤖 Carga y Sincronización Invisible</h5>
-                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Mejoramos el motor de la app para que la Sincronización Automática, los Cálculos de Cruces y la Pirámide de Fechas se carguen de forma paralela y silenciosa en segundo plano sin interrumpir tu navegación.</p>
+                            <h5>&#128679; En Desarrollo</h5>
+                            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Las nuevas características de esta versión están siendo preparadas.</p>
                         </div>
                     </div>
                     <!-- History Log Section -->
