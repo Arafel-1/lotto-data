@@ -1341,11 +1341,20 @@ function calculateJaulaMetrics(referenceDateStr) {
             metricsNum.daysWithoutShow = Infinity;
         }
 
-        // Determine Status
-        // FIX #2: >= 6 (not > 6) so day-6 numbers correctly enter Jaula
-        if (metricsNum.daysWithoutShow >= 6) {
+        // Determine Status based on currentAppType
+        let jaulaThreshold = 6;
+        let juicioMin = 4;
+        let juicioMax = 5;
+
+        if (currentAppType === 'extendida') {
+            jaulaThreshold = 15;
+            juicioMin = 13;
+            juicioMax = 14;
+        }
+
+        if (metricsNum.daysWithoutShow >= jaulaThreshold) {
             metricsNum.status = 'jaula';
-        } else if (metricsNum.daysWithoutShow >= 4 && metricsNum.daysWithoutShow <= 5) {
+        } else if (metricsNum.daysWithoutShow >= juicioMin && metricsNum.daysWithoutShow <= juicioMax) {
             metricsNum.status = 'juicio';
         } else {
             metricsNum.status = 'normal';
@@ -1917,7 +1926,8 @@ function renderJaula() {
 
     // Render Juicio results
     if (juicioNumbers.length === 0) {
-        juicioContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">✅ No hay números en juicio. Ningún número tiene entre 4 y 5 días sin salir.</p>';
+        let textMsg = currentAppType === 'extendida' ? 'entre 13 y 14 días' : 'entre 4 y 5 días';
+        juicioContainer.innerHTML = `<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">✅ No hay números en juicio. Ningún número tiene ${textMsg} sin salir.</p>`;
     } else {
         juicioNumbers.forEach(item => {
             const card = document.createElement('div');
@@ -1940,7 +1950,8 @@ function renderJaula() {
 
     // Render Jaula results
     if (jaulaNumbers.length === 0) {
-        jaulaContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">✅ No hay números en la jaula. Todos han salido en los últimos 6 días.</p>';
+        let textMsg = currentAppType === 'extendida' ? '14 días' : '5 días';
+        jaulaContainer.innerHTML = `<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">✅ No hay números en la jaula. Todos han salido en los últimos ${textMsg}.</p>`;
     } else {
         jaulaNumbers.forEach(item => {
             const card = document.createElement('div');
