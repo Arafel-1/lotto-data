@@ -483,15 +483,68 @@ async function tryAutoLogin() {
 // Auto-login check
 document.addEventListener('DOMContentLoaded', tryAutoLogin);
 
-async function validateLogin() {
+let currentLoginCedula = '';
+let currentLoginHash = '';
+
+function showLoginView(viewId) {
+    document.getElementById('login-view-cedula').style.display = 'none';
+    document.getElementById('login-view-password').style.display = 'none';
+    document.getElementById('login-view-create-pwd').style.display = 'none';
+    document.getElementById('login-view-register').style.display = 'none';
+    document.getElementById('login-view-wait').style.display = 'none';
+    
+    document.getElementById('login-error-cedula').style.display = 'none';
+    document.getElementById('login-error-password').style.display = 'none';
+    document.getElementById('login-error-create-pwd').style.display = 'none';
+    document.getElementById('login-error-register').style.display = 'none';
+    
+    if(viewId === 'cedula') {
+        document.getElementById('login-view-cedula').style.display = 'block';
+    } else if(viewId === 'password') {
+        document.getElementById('pwd-cedula-display').innerText = currentLoginCedula;
+        document.getElementById('login-view-password').style.display = 'block';
+    } else if(viewId === 'create-pwd') {
+        document.getElementById('create-pwd-cedula-display').innerText = currentLoginCedula;
+        document.getElementById('login-view-create-pwd').style.display = 'block';
+    } else if(viewId === 'register') {
+        document.getElementById('login-view-register').style.display = 'block';
+    } else if(viewId === 'wait') {
+        document.getElementById('login-view-wait').style.display = 'block';
+    }
+}
+
+async function fetchClientsData() {
+    const jsonUrlV2 = 'https://raw.githubusercontent.com/Arafel-1/lotto-data/main/data/clients_v2.json';
+    const jsonUrlV1 = 'https://raw.githubusercontent.com/Arafel-1/lotto-data/main/data/clients.json';
+    try {
+        let res = await fetch(jsonUrlV2 + '?' + new Date().getTime());
+        if (res.ok) {
+            return await res.json();
+        }
+    } catch(e) {}
+    
+    // Fallback v1
+    let res = await fetch(jsonUrlV1 + '?' + new Date().getTime());
+    if (res.ok) {
+        let v1 = await res.json();
+        let v2Format = {};
+        for (let k in v1) {
+            v2Format[k] = { exp: v1[k] };
+        }
+        return v2Format;
+    }
+    throw new Error("No se pudo cargar la base de datos.");
+}
+
+async function validateLoginStep1() {
     const cedulaInput = document.getElementById('login-cedula').value.trim();
-    const errorMsg = document.getElementById('login-error');
-    const loginBtn = document.getElementById('login-btn');
+    const errorMsg = document.getElementById('login-error-cedula');
+    const btn = document.getElementById('login-btn-cedula');
     
     if (!cedulaInput) return;
     
-    loginBtn.disabled = true;
-    loginBtn.innerText = 'Verificando...';
+    btn.disabled = true;
+    btn.innerText = 'Verificando...';
     errorMsg.style.display = 'none';
     
     try {
@@ -500,43 +553,158 @@ async function validateLogin() {
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        currentLoginCedula = cedulaInput;
+        currentLoginHash = hashHex;
 
-        // URL del archivo de clientes en GitHub (Raw)
-        const jsonUrl = 'https://raw.githubusercontent.com/Arafel-1/lotto-data/main/data/clients.json';
+        const clientsData = await fetchClientsData();
+        const clientInfo = clientsData[hashHex];
         
-        const response = await fetch(jsonUrl + '?' + new Date().getTime());
-        if (!response.ok) throw new Error("No se pudo cargar la base de datos.");
-        
-        const validClients = await response.json();
-        const expirationDate = validClients[hashHex];
-        
-        if (expirationDate) {
-            const check = validateExpiration(expirationDate);
-            if (check.valid) {
-                localStorage.setItem('session_hash', hashHex);
-                localStorage.setItem('session_exp_date', expirationDate);
-                resetInactivity();
-                startInactivityMonitor();
-                
-                updateSubUI(check.days);
-                
-                document.getElementById('login-screen').style.display = 'none';
-                showLauncher();
-            } else {
+        if (clientInfo) {
+            const check = validateExpiration(clientInfo.exp);
+            if (!check.valid) {
                 errorMsg.style.display = 'block';
-                errorMsg.innerHTML = '<p style="color: #f87171; margin: 0 0 1rem 0; font-weight: 600;">Tu suscripción ha vencido.</p><a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="display: inline-block; background: #25D366; color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem;">📲 Contactar para Renovar</a>';
+                errorMsg.innerHTML = '<p>Tu suscripción ha vencido.</p><a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="display:inline-block;background:#25D366;color:white;padding:0.5rem;border-radius:6px;text-decoration:none;">Contactar para Renovar</a>';
+                return;
+            }
+            if (clientInfo.pwd) {
+                showLoginView('password');
+            } else {
+                showLoginView('create-pwd');
             }
         } else {
             errorMsg.style.display = 'block';
-            errorMsg.innerHTML = '<p style="color: #f87171; margin: 0 0 1rem 0; font-weight: 600;">Cédula incorrecta o no autorizada.</p><a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="display: inline-block; background: #25D366; color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem;">📲 Solicitar Acceso</a>';
+            errorMsg.innerHTML = 'Cédula no encontrada. Por favor, regístrate.';
         }
     } catch (e) {
-        console.error(e);
         errorMsg.style.display = 'block';
-        errorMsg.innerHTML = '<p style="color: #f87171; margin: 0; font-weight: 600;">Error de conexión.</p>';
+        errorMsg.innerHTML = 'Error de conexión.';
     } finally {
-        loginBtn.disabled = false;
-        loginBtn.innerText = 'Entrar al Sistema';
+        btn.disabled = false;
+        btn.innerText = 'Continuar';
+    }
+}
+
+async function validateLoginStep2() {
+    const pwdInput = document.getElementById('login-password').value.trim();
+    const errorMsg = document.getElementById('login-error-password');
+    const btn = document.getElementById('login-btn-password');
+    
+    if (!pwdInput) return;
+    
+    btn.disabled = true;
+    btn.innerText = 'Entrando...';
+    errorMsg.style.display = 'none';
+    
+    try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(pwdInput);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const pwdHashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        const clientsData = await fetchClientsData();
+        const clientInfo = clientsData[currentLoginHash];
+        
+        if (clientInfo && clientInfo.pwd === pwdHashHex) {
+            localStorage.setItem('session_hash', currentLoginHash);
+            localStorage.setItem('session_exp_date', clientInfo.exp);
+            resetInactivity();
+            startInactivityMonitor();
+            
+            const check = validateExpiration(clientInfo.exp);
+            updateSubUI(check.days);
+            
+            document.getElementById('login-screen').style.display = 'none';
+            showLauncher();
+        } else {
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = 'Contraseña incorrecta.';
+        }
+    } catch (e) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = 'Error de conexión.';
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Entrar al Sistema';
+    }
+}
+
+async function submitCreatePassword() {
+    const pwdInput = document.getElementById('create-pwd-input').value.trim();
+    const errorMsg = document.getElementById('login-error-create-pwd');
+    const btn = document.getElementById('login-btn-create-pwd');
+    
+    if (!pwdInput) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = 'Ingresa una contraseña válida.';
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.innerText = 'Guardando...';
+    errorMsg.style.display = 'none';
+    
+    try {
+        let res = await fetch('https://web-production-480f.up.railway.app/api/public/set-password', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ cedula: currentLoginCedula, password: pwdInput })
+        });
+        
+        let data = await res.json();
+        if (data.status === 'success') {
+            showLoginView('wait');
+        } else {
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = data.message || 'Error al guardar la contraseña.';
+        }
+    } catch (e) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = 'Error de conexión al servidor.';
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Guardar Contraseña';
+    }
+}
+
+async function submitRegister() {
+    const nombre = document.getElementById('reg-nombre').value.trim();
+    const cedula = document.getElementById('reg-cedula').value.trim();
+    const password = document.getElementById('reg-password').value.trim();
+    const errorMsg = document.getElementById('login-error-register');
+    const btn = document.getElementById('login-btn-register');
+    
+    if (!nombre || !cedula || !password) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = 'Todos los campos son obligatorios.';
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.innerText = 'Registrando...';
+    errorMsg.style.display = 'none';
+    
+    try {
+        let res = await fetch('https://web-production-480f.up.railway.app/api/public/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ nombre, cedula, password })
+        });
+        
+        let data = await res.json();
+        if (data.status === 'success') {
+            showLoginView('wait');
+        } else {
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = data.message || 'Error al registrarse.';
+        }
+    } catch (e) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = 'Error de conexión al servidor.';
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Registrarme';
     }
 }
 

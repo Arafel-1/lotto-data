@@ -29,18 +29,82 @@
 <body>
 
 <!-- Pantalla de Login / Control de Acceso -->
+<style>
+@keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
 <div id="login-screen" style="position: fixed; inset: 0; background: var(--bg, #0f172a); z-index: 99999; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif;">
     <div style="background: var(--card-bg, #1e293b); padding: 2.5rem; border-radius: 12px; border: 1px solid rgba(59,130,246,0.3); text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
-        <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Control de Acceso</h2>
-        <p style="color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem;">Por favor, ingresa tu cédula para continuar</p>
         
-        <input type="text" id="login-cedula" placeholder="Número de Cédula" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center; font-family: monospace;" autocomplete="off" inputmode="numeric">
-        
-        <button id="login-btn" onclick="validateLogin()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #3b82f6; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(59,130,246,0.3);">Entrar al Sistema</button>
-        
-        <div id="login-error" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px;">
-            <p style="color: #f87171; margin: 0 0 1rem 0; font-weight: 600;">Cédula incorrecta o no autorizada.</p>
-            <a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="display: inline-block; background: #25D366; color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s;">📲 Contactar por WhatsApp</a>
+        <!-- VISTA: INGRESO CÉDULA -->
+        <div id="login-view-cedula">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Control de Acceso</h2>
+            <p style="color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem;">Por favor, ingresa tu cédula para continuar</p>
+            
+            <input type="text" id="login-cedula" placeholder="Número de Cédula" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center; font-family: monospace;" autocomplete="off" inputmode="numeric">
+            
+            <button id="login-btn-cedula" onclick="validateLoginStep1()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #3b82f6; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(59,130,246,0.3); margin-bottom: 1rem;">Continuar</button>
+            
+            <button onclick="showLoginView('register')" style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: transparent; color: #cbd5e1; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">¿No tienes cuenta? Regístrate aquí</button>
+            
+            <div id="login-error-cedula" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; color: #f87171; font-weight: 600;"></div>
+        </div>
+
+        <!-- VISTA: INGRESAR CONTRASEÑA -->
+        <div id="login-view-password" style="display: none;">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Iniciar Sesión</h2>
+            <p style="color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem;">Ingresa tu contraseña para la cédula <br><span id="pwd-cedula-display" style="font-weight:bold;color:white;font-size:1.2rem;"></span></p>
+            
+            <input type="password" id="login-password" placeholder="Contraseña" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center; font-family: monospace;">
+            
+            <button id="login-btn-password" onclick="validateLoginStep2()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #3b82f6; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(59,130,246,0.3); margin-bottom: 1rem;">Entrar al Sistema</button>
+            
+            <button onclick="showLoginView('cedula')" style="background: none; border: none; color: #94a3b8; cursor: pointer; text-decoration: underline; font-size: 0.9rem;">Cambiar de Cédula</button>
+
+            <div id="login-error-password" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; color: #f87171; font-weight: 600;"></div>
+        </div>
+
+        <!-- VISTA: CREAR CONTRASEÑA (USUARIOS ANTIGUOS) -->
+        <div id="login-view-create-pwd" style="display: none;">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Crear Contraseña</h2>
+            <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.95rem;">Para mayor seguridad, por favor crea una contraseña para tu cuenta (Cédula: <span id="create-pwd-cedula-display"></span>).</p>
+            
+            <input type="password" id="create-pwd-input" placeholder="Nueva Contraseña" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1.1rem; margin-bottom: 1rem; text-align: center; font-family: monospace;">
+            
+            <button id="login-btn-create-pwd" onclick="submitCreatePassword()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #10b981; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.3); margin-bottom: 1rem;">Guardar Contraseña</button>
+
+            <button onclick="showLoginView('cedula')" style="background: none; border: none; color: #94a3b8; cursor: pointer; text-decoration: underline; font-size: 0.9rem;">Volver</button>
+
+            <div id="login-error-create-pwd" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; color: #f87171; font-weight: 600;"></div>
+        </div>
+
+        <!-- VISTA: REGISTRO -->
+        <div id="login-view-register" style="display: none;">
+            <h2 style="color: #10b981; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Crear Perfil</h2>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.95rem;">Obtén 7 días de prueba gratis</p>
+            
+            <input type="text" id="reg-nombre" placeholder="Nombre y Apellido" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem; margin-bottom: 1rem; text-align: center;" autocomplete="off">
+            <input type="text" id="reg-cedula" placeholder="Número de Cédula" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem; margin-bottom: 1rem; text-align: center; font-family: monospace;" inputmode="numeric" autocomplete="off">
+            <input type="password" id="reg-password" placeholder="Crear Contraseña" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem; margin-bottom: 1.5rem; text-align: center; font-family: monospace;">
+            
+            <button id="login-btn-register" onclick="submitRegister()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #10b981; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.3); margin-bottom: 1rem;">Registrarme</button>
+            
+            <button onclick="showLoginView('cedula')" style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: transparent; color: #cbd5e1; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">Ya tengo cuenta, iniciar sesión</button>
+            
+            <div id="login-error-register" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; color: #f87171; font-weight: 600;"></div>
+        </div>
+
+        <!-- VISTA: ESPERA (VALIDANDO DATOS) -->
+        <div id="login-view-wait" style="display: none;">
+            <h2 style="color: #f59e0b; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Validando Datos...</h2>
+            <div style="font-size: 3rem; margin: 1rem 0; display: inline-block; animation: spin 2s linear infinite;">⏳</div>
+            <p style="color: #cbd5e1; margin-bottom: 1rem; font-size: 1rem; line-height: 1.5;">
+                Tus datos están siendo validados de forma segura en la base de datos central.
+            </p>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem;">
+                Este proceso puede tardar <strong>entre 5 y 10 minutos</strong>.<br>
+                Por favor, intenta iniciar sesión pasado este tiempo.
+            </p>
+            <button onclick="window.location.reload()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #3b82f6; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s;">Entendido, volver al Inicio</button>
         </div>
         
         <div style="margin-top: 2rem; font-size: 0.8rem; color: #64748b; letter-spacing: 0.5px;">
@@ -171,6 +235,10 @@
                 <span id="sub-badge" class="global-neto-badge zero" style="background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #60a5fa; display: none;">⏳ -- días</span>
                 <span id="global-neto-badge" class="global-neto-badge zero">Neto: 0</span>
             </div>
+            
+            <a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="background: #25D366; color: white; text-decoration: none; padding: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; font-weight: 600; transition: filter 0.2s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">
+                <span style="font-size: 1.2rem;">💬</span> Contactar al Proveedor
+            </a>
             <button id="logout-btn" onclick="forceLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; cursor: pointer; padding: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; font-family: inherit; font-weight: 600; transition: background 0.2s;" title="Cerrar sesión" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
                 <span style="font-size: 1.2rem;">🚪</span> <span>Salir y Limpiar Dispositivo</span>
             </button>
