@@ -599,7 +599,7 @@ function renderSuspendedContent(overlay, cedula, hasDiscount, bcv) {
                 </div>
             </div>
             <div style="display:flex;gap:0.75rem;margin-bottom:1rem;">
-                <button id="susp-copy-btn" onclick="suspCopyData('${copyText.replace(/\n/g,'\\n').replace(/'/g,\')}')" style="flex:1;background:#475569;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.2s;" onmouseover="this.style.background='#64748b'" onmouseout="this.style.background='#475569'">
+                <button id="susp-copy-btn" onclick="suspCopyData('${encodeURIComponent(copyText)}')" style="flex:1;background:#475569;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.2s;" onmouseover="this.style.background='#64748b'" onmouseout="this.style.background='#475569'">
                     📋 Copiar Datos
                 </button>
                 <button onclick="suspShowForm('${cedula}', ${priceVal})" style="flex:1;background:linear-gradient(135deg,#3b82f6,#6366f1);color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
@@ -650,8 +650,8 @@ function renderSuspendedContent(overlay, cedula, hasDiscount, bcv) {
     }
 }
 
-function suspCopyData(text) {
-    const decoded = text.replace(/\\n/g, '\n');
+function suspCopyData(encodedText) {
+    const decoded = decodeURIComponent(encodedText);
     navigator.clipboard.writeText(decoded).then(() => {
         const btn = document.getElementById('susp-copy-btn');
         if (btn) { btn.innerText = '✅ ¡Copiado!'; setTimeout(() => btn.innerText = '📋 Copiar Datos', 2000); }
