@@ -465,6 +465,14 @@ async function tryAutoLogin() {
             updateSubUI(check.days);
             document.getElementById('login-screen').style.display = 'none';
             showLauncher();
+            
+            // Background update of referral UI
+            fetchClientsData().then(clientsData => {
+                const clientInfo = clientsData[hash];
+                if(clientInfo && clientInfo.ref_code) {
+                    updateReferralUI(clientInfo.ref_code, clientInfo.ref_total, clientInfo.ref_month, clientInfo.ref_discount);
+                }
+            }).catch(e=>{});
         } else {
             clearSession();
         }
@@ -473,8 +481,53 @@ async function tryAutoLogin() {
     }
 }
 
-// Auto-login check
-document.addEventListener('DOMContentLoaded', tryAutoLogin);
+// Auto-login check and referral capture
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+        sessionStorage.setItem('referred_by', refCode);
+        setTimeout(() => { showLoginView('register'); }, 100);
+    }
+    tryAutoLogin();
+});
+
+let currentLoginCedula = '';
+let currentLoginHash = '';
+
+function updateReferralUI(refCode, refTotal, refMonth, refDiscount) {
+    if (!refCode) return;
+    localStorage.setItem('session_ref_code', refCode);
+    
+    document.getElementById('referral-panel').style.display = 'flex';
+    document.getElementById('ref-month-count').innerText = `${refMonth}/3`;
+    if (refDiscount) {
+        document.getElementById('ref-discount-badge').style.display = 'block';
+    } else {
+        document.getElementById('ref-discount-badge').style.display = 'none';
+    }
+    
+    // Fetch BCV
+    fetch('https://web-production-480f.up.railway.app/api/public/bcv-rate')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                const priceBs = refDiscount ? data.price_bs_discount : data.price_bs;
+                document.getElementById('ref-price-bs').innerText = `${priceBs}`;
+            }
+        }).catch(err => console.error('BCV error:', err));
+}
+
+function shareReferralLink() {
+    const refCode = localStorage.getItem('session_ref_code');
+    if (!refCode) return;
+    const link = `${window.location.origin}${window.location.pathname}?ref=${refCode}`;
+    navigator.clipboard.writeText(link).then(() => {
+        alert("¡Enlace copiado! Compártelo con tus amigos.");
+    }).catch(err => {
+        alert(`Comparte este enlace: ${link}`);
+    });
+}
 
 let currentLoginCedula = '';
 let currentLoginHash = '';
@@ -608,6 +661,10 @@ async function validateLoginStep2() {
             const check = validateExpiration(clientInfo.exp);
             updateSubUI(check.days);
             
+            if (clientInfo.ref_code) {
+                updateReferralUI(clientInfo.ref_code, clientInfo.ref_total, clientInfo.ref_month, clientInfo.ref_discount);
+            }
+            
             document.getElementById('login-screen').style.display = 'none';
             showLauncher();
         } else {
@@ -678,11 +735,13 @@ async function submitRegister() {
     btn.innerText = 'Registrando...';
     errorMsg.style.display = 'none';
     
+    const referred_by = sessionStorage.getItem('referred_by') || '';
+    
     try {
         let res = await fetch('https://web-production-480f.up.railway.app/api/public/register', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ nombre, cedula, password })
+            body: JSON.stringify({ nombre, cedula, password, referred_by })
         });
         
         let data = await res.json();
