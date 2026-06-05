@@ -4184,18 +4184,82 @@ input:checked+.slider:before {
 <body>
 
 <!-- Pantalla de Login / Control de Acceso -->
+<style>
+@keyframes spin { 100% { transform: rotate(360deg); } }
+</style>
 <div id="login-screen" style="position: fixed; inset: 0; background: var(--bg, #0f172a); z-index: 99999; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif;">
     <div style="background: var(--card-bg, #1e293b); padding: 2.5rem; border-radius: 12px; border: 1px solid rgba(59,130,246,0.3); text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
-        <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Control de Acceso</h2>
-        <p style="color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem;">Por favor, ingresa tu cédula para continuar</p>
         
-        <input type="text" id="login-cedula" placeholder="Número de Cédula" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center; font-family: monospace;" autocomplete="off" inputmode="numeric">
-        
-        <button id="login-btn" onclick="validateLogin()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #3b82f6; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(59,130,246,0.3);">Entrar al Sistema</button>
-        
-        <div id="login-error" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px;">
-            <p style="color: #f87171; margin: 0 0 1rem 0; font-weight: 600;">Cédula incorrecta o no autorizada.</p>
-            <a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="display: inline-block; background: #25D366; color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; transition: background 0.2s;">📲 Contactar por WhatsApp</a>
+        <!-- VISTA: INGRESO CÉDULA -->
+        <div id="login-view-cedula">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Control de Acceso</h2>
+            <p style="color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem;">Por favor, ingresa tu cédula para continuar</p>
+            
+            <input type="text" id="login-cedula" placeholder="Número de Cédula" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center; font-family: monospace;" autocomplete="off" inputmode="numeric">
+            
+            <button id="login-btn-cedula" onclick="validateLoginStep1()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #3b82f6; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(59,130,246,0.3); margin-bottom: 1rem;">Continuar</button>
+            
+            <button onclick="showLoginView('register')" style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: transparent; color: #cbd5e1; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">¿No tienes cuenta? Regístrate aquí</button>
+            
+            <div id="login-error-cedula" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; color: #f87171; font-weight: 600;"></div>
+        </div>
+
+        <!-- VISTA: INGRESAR CONTRASEÑA -->
+        <div id="login-view-password" style="display: none;">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Iniciar Sesión</h2>
+            <p style="color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem;">Ingresa tu contraseña para la cédula <br><span id="pwd-cedula-display" style="font-weight:bold;color:white;font-size:1.2rem;"></span></p>
+            
+            <input type="password" id="login-password" placeholder="Contraseña" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1.1rem; margin-bottom: 1.5rem; text-align: center; font-family: monospace;">
+            
+            <button id="login-btn-password" onclick="validateLoginStep2()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #3b82f6; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(59,130,246,0.3); margin-bottom: 1rem;">Entrar al Sistema</button>
+            
+            <button onclick="showLoginView('cedula')" style="background: none; border: none; color: #94a3b8; cursor: pointer; text-decoration: underline; font-size: 0.9rem;">Cambiar de Cédula</button>
+
+            <div id="login-error-password" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; color: #f87171; font-weight: 600;"></div>
+        </div>
+
+        <!-- VISTA: CREAR CONTRASEÑA (USUARIOS ANTIGUOS) -->
+        <div id="login-view-create-pwd" style="display: none;">
+            <h2 style="color: #60a5fa; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Crear Contraseña</h2>
+            <p style="color: #94a3b8; margin-bottom: 1rem; font-size: 0.95rem;">Para mayor seguridad, por favor crea una contraseña para tu cuenta (Cédula: <span id="create-pwd-cedula-display"></span>).</p>
+            
+            <input type="password" id="create-pwd-input" placeholder="Nueva Contraseña" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1.1rem; margin-bottom: 1rem; text-align: center; font-family: monospace;">
+            
+            <button id="login-btn-create-pwd" onclick="submitCreatePassword()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #10b981; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.3); margin-bottom: 1rem;">Guardar Contraseña</button>
+
+            <button onclick="showLoginView('cedula')" style="background: none; border: none; color: #94a3b8; cursor: pointer; text-decoration: underline; font-size: 0.9rem;">Volver</button>
+
+            <div id="login-error-create-pwd" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; color: #f87171; font-weight: 600;"></div>
+        </div>
+
+        <!-- VISTA: REGISTRO -->
+        <div id="login-view-register" style="display: none;">
+            <h2 style="color: #10b981; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Crear Perfil</h2>
+            <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.95rem;">Obtén 7 días de prueba gratis</p>
+            
+            <input type="text" id="reg-nombre" placeholder="Nombre y Apellido" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem; margin-bottom: 1rem; text-align: center;" autocomplete="off">
+            <input type="text" id="reg-cedula" placeholder="Número de Cédula" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem; margin-bottom: 1rem; text-align: center; font-family: monospace;" inputmode="numeric" autocomplete="off">
+            <input type="password" id="reg-password" placeholder="Crear Contraseña" style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem; margin-bottom: 1.5rem; text-align: center; font-family: monospace;">
+            
+            <button id="login-btn-register" onclick="submitRegister()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #10b981; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 6px -1px rgba(16,185,129,0.3); margin-bottom: 1rem;">Registrarme</button>
+            
+            <button onclick="showLoginView('cedula')" style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid #334155; background: transparent; color: #cbd5e1; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">Ya tengo cuenta, iniciar sesión</button>
+            
+            <div id="login-error-register" style="display: none; margin-top: 1.5rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; border-radius: 8px; color: #f87171; font-weight: 600;"></div>
+        </div>
+
+        <!-- VISTA: ESPERA (VALIDANDO DATOS) -->
+        <div id="login-view-wait" style="display: none;">
+            <h2 style="color: #f59e0b; margin-top: 0; margin-bottom: 0.5rem; font-size: 1.8rem;">Validando Datos...</h2>
+            <div style="font-size: 3rem; margin: 1rem 0; display: inline-block; animation: spin 2s linear infinite;">⏳</div>
+            <p style="color: #cbd5e1; margin-bottom: 1rem; font-size: 1rem; line-height: 1.5;">
+                Tus datos están siendo validados de forma segura en la base de datos central.
+            </p>
+            <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem;">
+                Este proceso puede tardar <strong>entre 5 y 10 minutos</strong>.<br>
+                Por favor, intenta iniciar sesión pasado este tiempo.
+            </p>
+            <button onclick="window.location.reload()" style="width: 100%; padding: 1rem; border-radius: 8px; border: none; background: #3b82f6; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s;">Entendido, volver al Inicio</button>
         </div>
         
         <div style="margin-top: 2rem; font-size: 0.8rem; color: #64748b; letter-spacing: 0.5px;">
@@ -4326,6 +4390,28 @@ input:checked+.slider:before {
                 <span id="sub-badge" class="global-neto-badge zero" style="background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #60a5fa; display: none;">⏳ -- días</span>
                 <span id="global-neto-badge" class="global-neto-badge zero">Neto: 0</span>
             </div>
+            
+            <a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="background: #25D366; color: white; text-decoration: none; padding: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; font-weight: 600; transition: filter 0.2s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">
+                <span style="font-size: 1.2rem;">💬</span> Contactar al Proveedor
+            </a>
+
+            <!-- Panel de Referidos -->
+            <div id="referral-panel" style="background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.3); border-radius: 8px; padding: 0.75rem; display: none; flex-direction: column; gap: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #a78bfa; font-weight: 600; font-size: 0.85rem;">🎁 Referidos este mes</span>
+                    <span id="ref-month-count" style="color: white; font-weight: bold; background: rgba(139,92,246,0.4); padding: 2px 8px; border-radius: 20px; font-size: 0.85rem;">0/3</span>
+                </div>
+                <div id="ref-discount-badge" style="display:none; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); border-radius: 6px; padding: 0.4rem 0.6rem; color: #34d399; font-size: 0.8rem; text-align: center;">
+                    ✅ ¡Tienes 20% de descuento!
+                </div>
+                <div id="ref-price-info" style="color: #94a3b8; font-size: 0.78rem; text-align: center;">
+                    Activación: <span id="ref-price-bs" style="color: #cbd5e1; font-weight: 600;">cargando...</span>
+                </div>
+                <button id="invite-btn" onclick="shareReferralLink()" style="background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; border: none; padding: 0.65rem; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem; transition: opacity 0.2s; font-family: inherit;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                    🔗 Compartir mi código
+                </button>
+            </div>
+
             <button id="logout-btn" onclick="forceLogout()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; cursor: pointer; padding: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; font-family: inherit; font-weight: 600; transition: background 0.2s;" title="Cerrar sesión" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
                 <span style="font-size: 1.2rem;">🚪</span> <span>Salir y Limpiar Dispositivo</span>
             </button>
@@ -4868,7 +4954,30 @@ input:checked+.slider:before {
                     <!-- Updates Section -->
                     <div id="updates-content" class="help-content">
                         <h4>&#128640; Última Actualización — v1.0.22</h4>
-                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Fecha: 4 de Junio, 2026</p>
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Fecha: 5 de Junio, 2026</p>
+
+                        <div class="guide-section">
+                            <h5>&#128100; Perfiles de Autogestión y Seguridad</h5>
+                            <ul>
+                                <li><strong>&#128272; Contraseña Personal:</strong> Ahora cada usuario crea su propia contraseña al entrar por primera vez, mejorando la seguridad y privacidad de tu cuenta.</li>
+                                <li><strong>&#128259; Refresco Automático:</strong> Al cerrar sesión de forma manual o por inactividad, la página se recarga sola para asegurar que recibes las últimas actualizaciones.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#127873; Sistema de Referidos y Descuentos</h5>
+                            <ul>
+                                <li><strong>&#128279; Códigos Únicos:</strong> Se agregó un nuevo panel debajo del botón de WhatsApp donde puedes compartir un enlace de invitación con tu código personal.</li>
+                                <li><strong>&#128176; Descuento Mensual:</strong> Si invitas a 3 personas en un mes usando tu enlace, el sistema automáticamente te otorgará un <strong>20% de descuento</strong> en la próxima activación.</li>
+                            </ul>
+                        </div>
+
+                        <div class="guide-section">
+                            <h5>&#128181; Cálculo Automático BCV</h5>
+                            <ul>
+                                <li><strong>&#128200; Precio al Instante:</strong> La plataforma ahora se conecta directamente al Banco Central de Venezuela para mostrarte el monto exacto de la cuota en Bolívares calculado en tiempo real.</li>
+                            </ul>
+                        </div>
 
                         <div class="guide-section">
                             <h5>&#128260; Modos de Vista en Número Fuerte y Patrones</h5>
@@ -5613,16 +5722,9 @@ function clearSession() {
 
 function forceLogout() {
     // Limpiar sesión
-    // Nota: Ya no borramos localStorage de ganancias aquí para que no se pierdan si no hay nube configurada
     clearSession();
-    document.getElementById('main-app').style.display = 'none';
-    document.getElementById('lottery-launcher').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('login-cedula').value = '';
-    document.getElementById('login-error').style.display = 'none';
-
-    const subBanner = document.getElementById('sub-warning-banner');
-    if (subBanner) subBanner.style.display = 'none';
+    // Forzar refrescamiento de la página para obtener la última versión (bypasseando la caché)
+    window.location.href = window.location.pathname + '?v=' + new Date().getTime();
 }
 
 function validateExpiration(expDateStr) {
@@ -5669,6 +5771,7 @@ async function tryAutoLogin() {
     const hash = localStorage.getItem('session_hash');
     const lastActivity = parseInt(localStorage.getItem('session_last_activity') || '0');
     const expDate = localStorage.getItem('session_exp_date');
+    const cedula = localStorage.getItem('session_cedula');
     
     if (hash && expDate && (Date.now() - lastActivity <= INACTIVITY_LIMIT_MS)) {
         const check = validateExpiration(expDate);
@@ -5678,26 +5781,305 @@ async function tryAutoLogin() {
             updateSubUI(check.days);
             document.getElementById('login-screen').style.display = 'none';
             showLauncher();
+            
+            // Background update of referral UI
+            fetchClientsData().then(clientsData => {
+                const clientInfo = clientsData[hash];
+                if(clientInfo && clientInfo.ref_code) {
+                    updateReferralUI(clientInfo.ref_code, clientInfo.ref_total, clientInfo.ref_month, clientInfo.ref_discount);
+                }
+            }).catch(e=>{});
         } else {
-            clearSession();
+            // Expired: enter app but show suspension overlay
+            document.getElementById('login-screen').style.display = 'none';
+            showLauncher();
+            fetchClientsData().then(clientsData => {
+                const clientInfo = clientsData[hash];
+                const hasDiscount = clientInfo && clientInfo.ref_discount;
+                showSuspendedOverlay(cedula || '', hasDiscount);
+            }).catch(() => showSuspendedOverlay(cedula || '', false));
         }
     } else {
         clearSession();
     }
 }
 
-// Auto-login check
-document.addEventListener('DOMContentLoaded', tryAutoLogin);
+// Auto-login check and referral capture
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+        sessionStorage.setItem('referred_by', refCode);
+        setTimeout(() => { showLoginView('register'); }, 100);
+    }
+    tryAutoLogin();
+});
 
-async function validateLogin() {
+let currentLoginCedula = '';
+let currentLoginHash = '';
+
+function updateReferralUI(refCode, refTotal, refMonth, refDiscount) {
+    if (!refCode) return;
+    localStorage.setItem('session_ref_code', refCode);
+    
+    document.getElementById('referral-panel').style.display = 'flex';
+    document.getElementById('ref-month-count').innerText = `${refMonth}/3`;
+    if (refDiscount) {
+        document.getElementById('ref-discount-badge').style.display = 'block';
+    } else {
+        document.getElementById('ref-discount-badge').style.display = 'none';
+    }
+    
+    // Fetch BCV
+    fetch(`data/bcv_rate.json?v=${new Date().getTime()}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                const priceBs = refDiscount ? data.price_bs_discount : data.price_bs;
+                document.getElementById('ref-price-bs').innerText = `${priceBs}`;
+            }
+        }).catch(err => console.error('BCV error:', err));
+}
+
+function shareReferralLink() {
+    const refCode = localStorage.getItem('session_ref_code');
+    if (!refCode) return;
+    const link = `${window.location.origin}${window.location.pathname}?ref=${refCode}`;
+    navigator.clipboard.writeText(link).then(() => {
+        alert("¡Enlace copiado! Compártelo con tus amigos.");
+    }).catch(err => {
+        alert(`Comparte este enlace: ${link}`);
+    });
+}
+
+// ── Suspension Overlay ────────────────────────────────────────────────────
+function showSuspendedOverlay(cedula, hasDiscount) {
+    // Remove any existing overlay
+    const existing = document.getElementById('suspension-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'suspension-overlay';
+    overlay.style.cssText = `
+        position:fixed;inset:0;z-index:99999;
+        background:rgba(10,14,26,0.97);
+        backdrop-filter:blur(8px);
+        display:flex;align-items:center;justify-content:center;
+        font-family:'Segoe UI',system-ui,sans-serif;
+    `;
+
+    // Load BCV data then render
+    fetch(`https://raw.githubusercontent.com/Arafel-1/lotto-data/main/data/bcv_rate.json?v=${Date.now()}`)
+        .then(r => r.json())
+        .then(bcv => renderSuspendedContent(overlay, cedula, hasDiscount, bcv))
+        .catch(() => renderSuspendedContent(overlay, cedula, hasDiscount, null));
+
+    document.body.appendChild(overlay);
+}
+
+function renderSuspendedContent(overlay, cedula, hasDiscount, bcv) {
+    let priceText = 'calculando...';
+    let priceVal = 0;
+    if (bcv && bcv.status === 'ok') {
+        priceVal = hasDiscount ? bcv.price_bs_discount : bcv.price_bs;
+        const formatted = priceVal.toLocaleString('es-VE', {minimumFractionDigits:2, maximumFractionDigits:2});
+        priceText = `Bs. ${formatted}${hasDiscount ? ' <span style="color:#34d399;font-size:0.85em">(20% desc. aplicado ✅)</span>' : ''}`;
+    }
+
+    const PAYMENT_INFO = {
+        cedula: 'V30942249',
+        banco: 'Banco de Venezuela (0102)',
+        telefono: '04142180858',
+        monto: priceVal
+    };
+
+    const copyText = `Pago Móvil a:\nCédula: ${PAYMENT_INFO.cedula}\nBanco: ${PAYMENT_INFO.banco}\nTeléfono: ${PAYMENT_INFO.telefono}\nMonto: Bs. ${priceVal}`;
+
+    overlay.innerHTML = `
+    <div style="max-width:440px;width:92%;background:#1e293b;border:1px solid #334155;border-radius:16px;padding:2rem;box-shadow:0 25px 50px rgba(0,0,0,0.7);text-align:center;">
+        <div style="font-size:3rem;margin-bottom:0.5rem;">🔒</div>
+        <h2 style="color:#f87171;margin:0 0 0.5rem;font-size:1.4rem;">Cuenta Suspendida</h2>
+        <p style="color:#94a3b8;font-size:0.9rem;margin:0 0 1.5rem;">Tu suscripción ha vencido. Realiza el pago móvil para reactivar el acceso.</p>
+
+        <div id="susp-payment-view">
+            <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:1.2rem;text-align:left;margin-bottom:1rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;">
+                    <span style="color:#94a3b8;font-size:0.8rem;">DATOS DE PAGO MÓVIL</span>
+                </div>
+                <div style="display:grid;gap:0.6rem;">
+                    <div><span style="color:#64748b;font-size:0.8rem;">Cédula:</span><br><strong style="color:#f1f5f9;">${PAYMENT_INFO.cedula}</strong></div>
+                    <div><span style="color:#64748b;font-size:0.8rem;">Banco:</span><br><strong style="color:#f1f5f9;">${PAYMENT_INFO.banco}</strong></div>
+                    <div><span style="color:#64748b;font-size:0.8rem;">Teléfono:</span><br><strong style="color:#f1f5f9;">${PAYMENT_INFO.telefono}</strong></div>
+                    <div><span style="color:#64748b;font-size:0.8rem;">Monto:</span><br><strong style="color:#60a5fa;font-size:1.1rem;">${priceText}</strong></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:0.75rem;margin-bottom:1rem;">
+                <button id="susp-copy-btn" onclick="suspCopyData('${encodeURIComponent(copyText)}')" style="flex:1;background:#475569;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.2s;" onmouseover="this.style.background='#64748b'" onmouseout="this.style.background='#475569'">
+                    📋 Copiar Datos
+                </button>
+                <button onclick="suspShowForm('${cedula}', ${priceVal})" style="flex:1;background:linear-gradient(135deg,#3b82f6,#6366f1);color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                    ✅ Confirmar Pago
+                </button>
+            </div>
+        </div>
+
+        <div id="susp-form-view" style="display:none;text-align:left;">
+            <p style="color:#94a3b8;font-size:0.85rem;margin:0 0 1rem;">Ingresa los datos del pago que realizaste:</p>
+            <div style="display:grid;gap:0.75rem;margin-bottom:1rem;">
+                <input id="susp-f-cedula" placeholder="Cédula del titular de la cuenta que envía" style="padding:0.75rem;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;font-size:0.95rem;width:100%;box-sizing:border-box;">
+                <input id="susp-f-telefono" placeholder="Teléfono del pago móvil que envió" style="padding:0.75rem;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;font-size:0.95rem;width:100%;box-sizing:border-box;">
+                <select id="susp-f-banco" style="padding:0.75rem;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;font-size:0.95rem;width:100%;box-sizing:border-box;">
+                    <option value="">Selecciona tu banco emisor</option>
+                    <option>Banco de Venezuela (0102)</option>
+                    <option>Banco Bicentenario (0175)</option>
+                    <option>Banesco (0134)</option>
+                    <option>Mercantil (0105)</option>
+                    <option>BBVA Provincial (0108)</option>
+                    <option>Banco Nacional de Crédito (0191)</option>
+                    <option>Banco del Tesoro (0163)</option>
+                    <option>Bancaribe (0128)</option>
+                    <option>Sofitasa (0137)</option>
+                    <option>Otro</option>
+                </select>
+                <input id="susp-f-ref" placeholder="Número de referencia del pago" style="padding:0.75rem;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;font-size:0.95rem;width:100%;box-sizing:border-box;">
+            </div>
+            <div id="susp-form-error" style="display:none;color:#f87171;font-size:0.85rem;margin-bottom:0.75rem;"></div>
+            <div style="display:flex;gap:0.75rem;">
+                <button onclick="document.getElementById('susp-form-view').style.display='none';document.getElementById('susp-payment-view').style.display='block';" style="flex:1;background:#334155;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;">← Volver</button>
+                <button id="susp-submit-btn" onclick="submitPaymentReport('${cedula}')" style="flex:2;background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">Enviar Reporte 📤</button>
+            </div>
+        </div>
+
+        <div id="susp-pending-view" style="display:none;text-align:center;padding:1rem 0;">
+            <div style="font-size:2.5rem;margin-bottom:0.5rem;">⏳</div>
+            <h3 style="color:#fbbf24;margin:0 0 0.5rem;">Pago en Revisión</h3>
+            <p style="color:#94a3b8;font-size:0.9rem;">Recibimos el reporte de tu pago. El administrador lo verificará pronto y tu acceso será reactivado automáticamente.</p>
+        </div>
+    </div>`;
+
+    // If already pending, show pending view
+    const payStatus = localStorage.getItem('suspension_payment_status');
+    if (payStatus === 'pending') {
+        overlay.querySelector('#susp-payment-view').style.display = 'none';
+        overlay.querySelector('#susp-pending-view').style.display = 'block';
+    }
+}
+
+function suspCopyData(encodedText) {
+    const decoded = decodeURIComponent(encodedText);
+    navigator.clipboard.writeText(decoded).then(() => {
+        const btn = document.getElementById('susp-copy-btn');
+        if (btn) { btn.innerText = '✅ ¡Copiado!'; setTimeout(() => btn.innerText = '📋 Copiar Datos', 2000); }
+    }).catch(() => alert(decoded));
+}
+
+function suspShowForm(cedula, price) {
+    document.getElementById('susp-payment-view').style.display = 'none';
+    document.getElementById('susp-form-view').style.display = 'block';
+}
+
+async function submitPaymentReport(cedula) {
+    const cedulaTitular = document.getElementById('susp-f-cedula').value.trim();
+    const telefono = document.getElementById('susp-f-telefono').value.trim();
+    const banco = document.getElementById('susp-f-banco').value.trim();
+    const referencia = document.getElementById('susp-f-ref').value.trim();
+    const errorEl = document.getElementById('susp-form-error');
+    const btn = document.getElementById('susp-submit-btn');
+
+    if (!telefono || !banco || !referencia) {
+        errorEl.style.display = 'block';
+        errorEl.innerText = 'Por favor, completa todos los campos.';
+        return;
+    }
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.innerText = 'Enviando...';
+
+    try {
+        const res = await fetch('https://web-production-480f.up.railway.app/api/public/report-payment', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ cedula, cedula_titular: cedulaTitular, telefono, banco, referencia })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            localStorage.setItem('suspension_payment_status', 'pending');
+            document.getElementById('susp-form-view').style.display = 'none';
+            document.getElementById('susp-pending-view').style.display = 'block';
+        } else {
+            errorEl.style.display = 'block';
+            errorEl.innerText = data.message || 'Error al enviar el reporte.';
+            btn.disabled = false;
+            btn.innerText = 'Enviar Reporte 📤';
+        }
+    } catch(e) {
+        errorEl.style.display = 'block';
+        errorEl.innerText = 'Error de conexión. Intenta de nuevo.';
+        btn.disabled = false;
+        btn.innerText = 'Enviar Reporte 📤';
+    }
+}
+
+
+function showLoginView(viewId) {
+    document.getElementById('login-view-cedula').style.display = 'none';
+    document.getElementById('login-view-password').style.display = 'none';
+    document.getElementById('login-view-create-pwd').style.display = 'none';
+    document.getElementById('login-view-register').style.display = 'none';
+    document.getElementById('login-view-wait').style.display = 'none';
+    
+    document.getElementById('login-error-cedula').style.display = 'none';
+    document.getElementById('login-error-password').style.display = 'none';
+    document.getElementById('login-error-create-pwd').style.display = 'none';
+    document.getElementById('login-error-register').style.display = 'none';
+    
+    if(viewId === 'cedula') {
+        document.getElementById('login-view-cedula').style.display = 'block';
+    } else if(viewId === 'password') {
+        document.getElementById('pwd-cedula-display').innerText = currentLoginCedula;
+        document.getElementById('login-view-password').style.display = 'block';
+    } else if(viewId === 'create-pwd') {
+        document.getElementById('create-pwd-cedula-display').innerText = currentLoginCedula;
+        document.getElementById('login-view-create-pwd').style.display = 'block';
+    } else if(viewId === 'register') {
+        document.getElementById('login-view-register').style.display = 'block';
+    } else if(viewId === 'wait') {
+        document.getElementById('login-view-wait').style.display = 'block';
+    }
+}
+
+async function fetchClientsData() {
+    const jsonUrlV2 = 'https://raw.githubusercontent.com/Arafel-1/lotto-data/main/data/clients_v2.json';
+    const jsonUrlV1 = 'https://raw.githubusercontent.com/Arafel-1/lotto-data/main/data/clients.json';
+    try {
+        let res = await fetch(jsonUrlV2 + '?' + new Date().getTime());
+        if (res.ok) {
+            return await res.json();
+        }
+    } catch(e) {}
+    
+    // Fallback v1
+    let res = await fetch(jsonUrlV1 + '?' + new Date().getTime());
+    if (res.ok) {
+        let v1 = await res.json();
+        let v2Format = {};
+        for (let k in v1) {
+            v2Format[k] = { exp: v1[k] };
+        }
+        return v2Format;
+    }
+    throw new Error("No se pudo cargar la base de datos.");
+}
+
+async function validateLoginStep1() {
     const cedulaInput = document.getElementById('login-cedula').value.trim();
-    const errorMsg = document.getElementById('login-error');
-    const loginBtn = document.getElementById('login-btn');
+    const errorMsg = document.getElementById('login-error-cedula');
+    const btn = document.getElementById('login-btn-cedula');
     
     if (!cedulaInput) return;
     
-    loginBtn.disabled = true;
-    loginBtn.innerText = 'Verificando...';
+    btn.disabled = true;
+    btn.innerText = 'Verificando...';
     errorMsg.style.display = 'none';
     
     try {
@@ -5706,43 +6088,174 @@ async function validateLogin() {
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        currentLoginCedula = cedulaInput;
+        currentLoginHash = hashHex;
 
-        // URL del archivo de clientes en GitHub (Raw)
-        const jsonUrl = 'https://raw.githubusercontent.com/Arafel-1/lotto-data/main/data/clients.json';
+        const clientsData = await fetchClientsData();
+        const clientInfo = clientsData[hashHex];
         
-        const response = await fetch(jsonUrl + '?' + new Date().getTime());
-        if (!response.ok) throw new Error("No se pudo cargar la base de datos.");
-        
-        const validClients = await response.json();
-        const expirationDate = validClients[hashHex];
-        
-        if (expirationDate) {
-            const check = validateExpiration(expirationDate);
-            if (check.valid) {
-                localStorage.setItem('session_hash', hashHex);
-                localStorage.setItem('session_exp_date', expirationDate);
-                resetInactivity();
-                startInactivityMonitor();
-                
-                updateSubUI(check.days);
-                
+        if (clientInfo) {
+            // Save cedula for suspended overlay use
+            localStorage.setItem('session_cedula', cedulaInput);
+            const check = validateExpiration(clientInfo.exp);
+            if (clientInfo.pwd) {
+                showLoginView('password');
+            } else if (!check.valid) {
+                // Expired + no password: show suspension overlay directly
                 document.getElementById('login-screen').style.display = 'none';
                 showLauncher();
+                showSuspendedOverlay(cedulaInput, clientInfo.ref_discount || false);
             } else {
-                errorMsg.style.display = 'block';
-                errorMsg.innerHTML = '<p style="color: #f87171; margin: 0 0 1rem 0; font-weight: 600;">Tu suscripción ha vencido.</p><a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="display: inline-block; background: #25D366; color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem;">📲 Contactar para Renovar</a>';
+                showLoginView('create-pwd');
             }
         } else {
             errorMsg.style.display = 'block';
-            errorMsg.innerHTML = '<p style="color: #f87171; margin: 0 0 1rem 0; font-weight: 600;">Cédula incorrecta o no autorizada.</p><a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="display: inline-block; background: #25D366; color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem;">📲 Solicitar Acceso</a>';
+            errorMsg.innerHTML = 'Cédula no encontrada. Por favor, regístrate.';
         }
     } catch (e) {
-        console.error(e);
         errorMsg.style.display = 'block';
-        errorMsg.innerHTML = '<p style="color: #f87171; margin: 0; font-weight: 600;">Error de conexión.</p>';
+        errorMsg.innerHTML = 'Error de conexión.';
     } finally {
-        loginBtn.disabled = false;
-        loginBtn.innerText = 'Entrar al Sistema';
+        btn.disabled = false;
+        btn.innerText = 'Continuar';
+    }
+}
+
+async function validateLoginStep2() {
+    const pwdInput = document.getElementById('login-password').value.trim();
+    const errorMsg = document.getElementById('login-error-password');
+    const btn = document.getElementById('login-btn-password');
+    
+    if (!pwdInput) return;
+    
+    btn.disabled = true;
+    btn.innerText = 'Entrando...';
+    errorMsg.style.display = 'none';
+    
+    try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(pwdInput);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const pwdHashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        const clientsData = await fetchClientsData();
+        const clientInfo = clientsData[currentLoginHash];
+        
+        if (clientInfo && clientInfo.pwd === pwdHashHex) {
+            localStorage.setItem('session_hash', currentLoginHash);
+            localStorage.setItem('session_exp_date', clientInfo.exp);
+            localStorage.setItem('session_cedula', currentLoginCedula);
+            const check = validateExpiration(clientInfo.exp);
+            
+            if (!check.valid) {
+                // Expired: enter app but show suspension overlay
+                document.getElementById('login-screen').style.display = 'none';
+                showLauncher();
+                showSuspendedOverlay(currentLoginCedula, clientInfo.ref_discount || false);
+            } else {
+                resetInactivity();
+                startInactivityMonitor();
+                updateSubUI(check.days);
+                
+                if (clientInfo.ref_code) {
+                    updateReferralUI(clientInfo.ref_code, clientInfo.ref_total, clientInfo.ref_month, clientInfo.ref_discount);
+                }
+                
+                document.getElementById('login-screen').style.display = 'none';
+                showLauncher();
+            }
+        } else {
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = 'Contraseña incorrecta.';
+        }
+    } catch (e) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = 'Error de conexión.';
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Entrar al Sistema';
+    }
+}
+
+async function submitCreatePassword() {
+    const pwdInput = document.getElementById('create-pwd-input').value.trim();
+    const errorMsg = document.getElementById('login-error-create-pwd');
+    const btn = document.getElementById('login-btn-create-pwd');
+    
+    if (!pwdInput) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = 'Ingresa una contraseña válida.';
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.innerText = 'Guardando...';
+    errorMsg.style.display = 'none';
+    
+    try {
+        let res = await fetch('https://web-production-480f.up.railway.app/api/public/set-password', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ cedula: currentLoginCedula, password: pwdInput })
+        });
+        
+        let data = await res.json();
+        if (data.status === 'success') {
+            showLoginView('wait');
+        } else {
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = data.message || 'Error al guardar la contraseña.';
+        }
+    } catch (e) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = 'Error de conexión al servidor.';
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Guardar Contraseña';
+    }
+}
+
+async function submitRegister() {
+    const nombre = document.getElementById('reg-nombre').value.trim();
+    const cedula = document.getElementById('reg-cedula').value.trim();
+    const password = document.getElementById('reg-password').value.trim();
+    const errorMsg = document.getElementById('login-error-register');
+    const btn = document.getElementById('login-btn-register');
+    
+    if (!nombre || !cedula || !password) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = 'Todos los campos son obligatorios.';
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.innerText = 'Registrando...';
+    errorMsg.style.display = 'none';
+    
+    const referred_by = sessionStorage.getItem('referred_by') || '';
+    
+    try {
+        let res = await fetch('https://web-production-480f.up.railway.app/api/public/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ nombre, cedula, password, referred_by })
+        });
+        
+        let data = await res.json();
+        if (data.status === 'success') {
+            showLoginView('wait');
+        } else {
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = data.message || 'Error al registrarse.';
+        }
+    } catch (e) {
+        errorMsg.style.display = 'block';
+        errorMsg.innerText = 'Error de conexión al servidor.';
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'Registrarme';
     }
 }
 
