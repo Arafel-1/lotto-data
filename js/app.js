@@ -710,6 +710,18 @@ async function submitPaymentReport(cedula) {
 }
 
 
+// ── WhatsApp Password Recovery ────────────────────────────────────────────
+const WA_SUPPORT_NUMBER = '584142180858'; // Número sin + ni espacios
+function updateWALink(anchorEl) {
+    const cedula = currentLoginCedula || document.getElementById('login-cedula').value.trim() || '(no ingresada)';
+    const msg = encodeURIComponent(
+        `Hola, necesito recuperar mi contraseña de Lottery Tracker.\n` +
+        `Mi cédula es: ${cedula}\n` +
+        `Por favor, ayúdame a restablecerla. ¡Gracias!`
+    );
+    anchorEl.href = `https://wa.me/${WA_SUPPORT_NUMBER}?text=${msg}`;
+}
+
 function showLoginView(viewId) {
     document.getElementById('login-view-cedula').style.display = 'none';
     document.getElementById('login-view-password').style.display = 'none';
