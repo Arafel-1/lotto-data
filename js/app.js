@@ -407,16 +407,9 @@ function clearSession() {
 
 function forceLogout() {
     // Limpiar sesión
-    // Nota: Ya no borramos localStorage de ganancias aquí para que no se pierdan si no hay nube configurada
     clearSession();
-    document.getElementById('main-app').style.display = 'none';
-    document.getElementById('lottery-launcher').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('login-cedula').value = '';
-    document.getElementById('login-error').style.display = 'none';
-
-    const subBanner = document.getElementById('sub-warning-banner');
-    if (subBanner) subBanner.style.display = 'none';
+    // Forzar refrescamiento de la página para obtener la última versión (bypasseando la caché)
+    window.location.href = window.location.pathname + '?v=' + new Date().getTime();
 }
 
 function validateExpiration(expDateStr) {
