@@ -529,8 +529,6 @@ function shareReferralLink() {
     });
 }
 
-let currentLoginCedula = '';
-let currentLoginHash = '';
 
 function showLoginView(viewId) {
     document.getElementById('login-view-cedula').style.display = 'none';
