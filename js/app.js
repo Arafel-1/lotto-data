@@ -481,8 +481,10 @@ async function tryAutoLogin() {
             fetchClientsData().then(clientsData => {
                 const clientInfo = clientsData[hash];
                 const hasDiscount = clientInfo && clientInfo.ref_discount;
-                showSuspendedOverlay(cedula || '', hasDiscount);
-            }).catch(() => showSuspendedOverlay(cedula || '', false));
+                // Usar el payment_status del servidor como fuente de verdad
+                const serverStatus = (clientInfo && clientInfo.payment_status) || '';
+                showSuspendedOverlay(cedula || '', hasDiscount, serverStatus);
+            }).catch(() => showSuspendedOverlay(cedula || '', false, ''));
         }
     } else {
         clearSession();
@@ -538,7 +540,9 @@ function shareReferralLink() {
 }
 
 // ── Suspension Overlay ────────────────────────────────────────────────────
-function showSuspendedOverlay(cedula, hasDiscount) {
+function showSuspendedOverlay(cedula, hasDiscount, serverPaymentStatus = '') {
+    // Save server status to window so render can use it
+    window._serverPaymentStatus = serverPaymentStatus;
     // Remove any existing overlay
     const existing = document.getElementById('suspension-overlay');
     if (existing) existing.remove();
@@ -642,9 +646,9 @@ function renderSuspendedContent(overlay, cedula, hasDiscount, bcv) {
         </div>
     </div>`;
 
-    // If already pending, show pending view
+    // If already pending locally or on the server, show pending view
     const payStatus = localStorage.getItem('suspension_payment_status');
-    if (payStatus === 'pending') {
+    if (payStatus === 'pending' || window._serverPaymentStatus === 'pending') {
         overlay.querySelector('#susp-payment-view').style.display = 'none';
         overlay.querySelector('#susp-pending-view').style.display = 'block';
     }
@@ -838,8 +842,10 @@ async function validateLoginStep2() {
                 // Expired: enter app but show suspension overlay
                 document.getElementById('login-screen').style.display = 'none';
                 showLauncher();
-                showSuspendedOverlay(currentLoginCedula, clientInfo.ref_discount || false);
+                // Pass payment_status directly from server to override local if needed
+                showSuspendedOverlay(currentLoginCedula, clientInfo.ref_discount || false, clientInfo.payment_status);
             } else {
+                localStorage.removeItem('suspension_payment_status'); // Limpiar estado de suspension anterior
                 resetInactivity();
                 startInactivityMonitor();
                 updateSubUI(check.days);
