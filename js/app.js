@@ -456,6 +456,7 @@ async function tryAutoLogin() {
     const hash = localStorage.getItem('session_hash');
     const lastActivity = parseInt(localStorage.getItem('session_last_activity') || '0');
     const expDate = localStorage.getItem('session_exp_date');
+    const cedula = localStorage.getItem('session_cedula');
     
     if (hash && expDate && (Date.now() - lastActivity <= INACTIVITY_LIMIT_MS)) {
         const check = validateExpiration(expDate);
@@ -474,7 +475,14 @@ async function tryAutoLogin() {
                 }
             }).catch(e=>{});
         } else {
-            clearSession();
+            // Expired: enter app but show suspension overlay
+            document.getElementById('login-screen').style.display = 'none';
+            showLauncher();
+            fetchClientsData().then(clientsData => {
+                const clientInfo = clientsData[hash];
+                const hasDiscount = clientInfo && clientInfo.ref_discount;
+                showSuspendedOverlay(cedula || '', hasDiscount);
+            }).catch(() => showSuspendedOverlay(cedula || '', false));
         }
     } else {
         clearSession();
@@ -527,6 +535,174 @@ function shareReferralLink() {
     }).catch(err => {
         alert(`Comparte este enlace: ${link}`);
     });
+}
+
+// ── Suspension Overlay ────────────────────────────────────────────────────
+function showSuspendedOverlay(cedula, hasDiscount) {
+    // Remove any existing overlay
+    const existing = document.getElementById('suspension-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'suspension-overlay';
+    overlay.style.cssText = `
+        position:fixed;inset:0;z-index:99999;
+        background:rgba(10,14,26,0.97);
+        backdrop-filter:blur(8px);
+        display:flex;align-items:center;justify-content:center;
+        font-family:'Segoe UI',system-ui,sans-serif;
+    `;
+
+    // Load BCV data then render
+    fetch(`https://raw.githubusercontent.com/Arafel-1/lotto-data/main/data/bcv_rate.json?v=${Date.now()}`)
+        .then(r => r.json())
+        .then(bcv => renderSuspendedContent(overlay, cedula, hasDiscount, bcv))
+        .catch(() => renderSuspendedContent(overlay, cedula, hasDiscount, null));
+
+    document.body.appendChild(overlay);
+}
+
+function renderSuspendedContent(overlay, cedula, hasDiscount, bcv) {
+    let priceText = 'calculando...';
+    let priceVal = 0;
+    if (bcv && bcv.status === 'ok') {
+        priceVal = hasDiscount ? bcv.price_bs_discount : bcv.price_bs;
+        const formatted = priceVal.toLocaleString('es-VE', {minimumFractionDigits:2, maximumFractionDigits:2});
+        priceText = `Bs. ${formatted}${hasDiscount ? ' <span style="color:#34d399;font-size:0.85em">(20% desc. aplicado ✅)</span>' : ''}`;
+    }
+
+    const PAYMENT_INFO = {
+        cedula: 'V30942249',
+        banco: 'Banco de Venezuela (0102)',
+        telefono: '04142180858',
+        monto: priceVal
+    };
+
+    const copyText = `Pago Móvil a:\nCédula: ${PAYMENT_INFO.cedula}\nBanco: ${PAYMENT_INFO.banco}\nTeléfono: ${PAYMENT_INFO.telefono}\nMonto: Bs. ${priceVal}`;
+
+    overlay.innerHTML = `
+    <div style="max-width:440px;width:92%;background:#1e293b;border:1px solid #334155;border-radius:16px;padding:2rem;box-shadow:0 25px 50px rgba(0,0,0,0.7);text-align:center;">
+        <div style="font-size:3rem;margin-bottom:0.5rem;">🔒</div>
+        <h2 style="color:#f87171;margin:0 0 0.5rem;font-size:1.4rem;">Cuenta Suspendida</h2>
+        <p style="color:#94a3b8;font-size:0.9rem;margin:0 0 1.5rem;">Tu suscripción ha vencido. Realiza el pago móvil para reactivar el acceso.</p>
+
+        <div id="susp-payment-view">
+            <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:1.2rem;text-align:left;margin-bottom:1rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;">
+                    <span style="color:#94a3b8;font-size:0.8rem;">DATOS DE PAGO MÓVIL</span>
+                </div>
+                <div style="display:grid;gap:0.6rem;">
+                    <div><span style="color:#64748b;font-size:0.8rem;">Cédula:</span><br><strong style="color:#f1f5f9;">${PAYMENT_INFO.cedula}</strong></div>
+                    <div><span style="color:#64748b;font-size:0.8rem;">Banco:</span><br><strong style="color:#f1f5f9;">${PAYMENT_INFO.banco}</strong></div>
+                    <div><span style="color:#64748b;font-size:0.8rem;">Teléfono:</span><br><strong style="color:#f1f5f9;">${PAYMENT_INFO.telefono}</strong></div>
+                    <div><span style="color:#64748b;font-size:0.8rem;">Monto:</span><br><strong style="color:#60a5fa;font-size:1.1rem;">${priceText}</strong></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:0.75rem;margin-bottom:1rem;">
+                <button id="susp-copy-btn" onclick="suspCopyData('${copyText.replace(/\n/g,'\\n').replace(/'/g,\')}')" style="flex:1;background:#475569;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.2s;" onmouseover="this.style.background='#64748b'" onmouseout="this.style.background='#475569'">
+                    📋 Copiar Datos
+                </button>
+                <button onclick="suspShowForm('${cedula}', ${priceVal})" style="flex:1;background:linear-gradient(135deg,#3b82f6,#6366f1);color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                    ✅ Confirmar Pago
+                </button>
+            </div>
+        </div>
+
+        <div id="susp-form-view" style="display:none;text-align:left;">
+            <p style="color:#94a3b8;font-size:0.85rem;margin:0 0 1rem;">Ingresa los datos del pago que realizaste:</p>
+            <div style="display:grid;gap:0.75rem;margin-bottom:1rem;">
+                <input id="susp-f-cedula" placeholder="Cédula del titular de la cuenta que envía" style="padding:0.75rem;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;font-size:0.95rem;width:100%;box-sizing:border-box;">
+                <input id="susp-f-telefono" placeholder="Teléfono del pago móvil que envió" style="padding:0.75rem;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;font-size:0.95rem;width:100%;box-sizing:border-box;">
+                <select id="susp-f-banco" style="padding:0.75rem;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;font-size:0.95rem;width:100%;box-sizing:border-box;">
+                    <option value="">Selecciona tu banco emisor</option>
+                    <option>Banco de Venezuela (0102)</option>
+                    <option>Banco Bicentenario (0175)</option>
+                    <option>Banesco (0134)</option>
+                    <option>Mercantil (0105)</option>
+                    <option>BBVA Provincial (0108)</option>
+                    <option>Banco Nacional de Crédito (0191)</option>
+                    <option>Banco del Tesoro (0163)</option>
+                    <option>Bancaribe (0128)</option>
+                    <option>Sofitasa (0137)</option>
+                    <option>Otro</option>
+                </select>
+                <input id="susp-f-ref" placeholder="Número de referencia del pago" style="padding:0.75rem;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;font-size:0.95rem;width:100%;box-sizing:border-box;">
+            </div>
+            <div id="susp-form-error" style="display:none;color:#f87171;font-size:0.85rem;margin-bottom:0.75rem;"></div>
+            <div style="display:flex;gap:0.75rem;">
+                <button onclick="document.getElementById('susp-form-view').style.display='none';document.getElementById('susp-payment-view').style.display='block';" style="flex:1;background:#334155;color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;">← Volver</button>
+                <button id="susp-submit-btn" onclick="submitPaymentReport('${cedula}')" style="flex:2;background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:0.75rem;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;">Enviar Reporte 📤</button>
+            </div>
+        </div>
+
+        <div id="susp-pending-view" style="display:none;text-align:center;padding:1rem 0;">
+            <div style="font-size:2.5rem;margin-bottom:0.5rem;">⏳</div>
+            <h3 style="color:#fbbf24;margin:0 0 0.5rem;">Pago en Revisión</h3>
+            <p style="color:#94a3b8;font-size:0.9rem;">Recibimos el reporte de tu pago. El administrador lo verificará pronto y tu acceso será reactivado automáticamente.</p>
+        </div>
+    </div>`;
+
+    // If already pending, show pending view
+    const payStatus = localStorage.getItem('suspension_payment_status');
+    if (payStatus === 'pending') {
+        overlay.querySelector('#susp-payment-view').style.display = 'none';
+        overlay.querySelector('#susp-pending-view').style.display = 'block';
+    }
+}
+
+function suspCopyData(text) {
+    const decoded = text.replace(/\\n/g, '\n');
+    navigator.clipboard.writeText(decoded).then(() => {
+        const btn = document.getElementById('susp-copy-btn');
+        if (btn) { btn.innerText = '✅ ¡Copiado!'; setTimeout(() => btn.innerText = '📋 Copiar Datos', 2000); }
+    }).catch(() => alert(decoded));
+}
+
+function suspShowForm(cedula, price) {
+    document.getElementById('susp-payment-view').style.display = 'none';
+    document.getElementById('susp-form-view').style.display = 'block';
+}
+
+async function submitPaymentReport(cedula) {
+    const cedulaTitular = document.getElementById('susp-f-cedula').value.trim();
+    const telefono = document.getElementById('susp-f-telefono').value.trim();
+    const banco = document.getElementById('susp-f-banco').value.trim();
+    const referencia = document.getElementById('susp-f-ref').value.trim();
+    const errorEl = document.getElementById('susp-form-error');
+    const btn = document.getElementById('susp-submit-btn');
+
+    if (!telefono || !banco || !referencia) {
+        errorEl.style.display = 'block';
+        errorEl.innerText = 'Por favor, completa todos los campos.';
+        return;
+    }
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.innerText = 'Enviando...';
+
+    try {
+        const res = await fetch('https://web-production-480f.up.railway.app/api/public/report-payment', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ cedula, cedula_titular: cedulaTitular, telefono, banco, referencia })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            localStorage.setItem('suspension_payment_status', 'pending');
+            document.getElementById('susp-form-view').style.display = 'none';
+            document.getElementById('susp-pending-view').style.display = 'block';
+        } else {
+            errorEl.style.display = 'block';
+            errorEl.innerText = data.message || 'Error al enviar el reporte.';
+            btn.disabled = false;
+            btn.innerText = 'Enviar Reporte 📤';
+        }
+    } catch(e) {
+        errorEl.style.display = 'block';
+        errorEl.innerText = 'Error de conexión. Intenta de nuevo.';
+        btn.disabled = false;
+        btn.innerText = 'Enviar Reporte 📤';
+    }
 }
 
 
@@ -605,14 +781,16 @@ async function validateLoginStep1() {
         const clientInfo = clientsData[hashHex];
         
         if (clientInfo) {
+            // Save cedula for suspended overlay use
+            localStorage.setItem('session_cedula', cedulaInput);
             const check = validateExpiration(clientInfo.exp);
-            if (!check.valid) {
-                errorMsg.style.display = 'block';
-                errorMsg.innerHTML = '<p>Tu suscripción ha vencido.</p><a href="https://wa.me/message/YE55X7DRQGYXL1" target="_blank" style="display:inline-block;background:#25D366;color:white;padding:0.5rem;border-radius:6px;text-decoration:none;">Contactar para Renovar</a>';
-                return;
-            }
             if (clientInfo.pwd) {
                 showLoginView('password');
+            } else if (!check.valid) {
+                // Expired + no password: show suspension overlay directly
+                document.getElementById('login-screen').style.display = 'none';
+                showLauncher();
+                showSuspendedOverlay(cedulaInput, clientInfo.ref_discount || false);
             } else {
                 showLoginView('create-pwd');
             }
@@ -653,18 +831,26 @@ async function validateLoginStep2() {
         if (clientInfo && clientInfo.pwd === pwdHashHex) {
             localStorage.setItem('session_hash', currentLoginHash);
             localStorage.setItem('session_exp_date', clientInfo.exp);
-            resetInactivity();
-            startInactivityMonitor();
-            
+            localStorage.setItem('session_cedula', currentLoginCedula);
             const check = validateExpiration(clientInfo.exp);
-            updateSubUI(check.days);
             
-            if (clientInfo.ref_code) {
-                updateReferralUI(clientInfo.ref_code, clientInfo.ref_total, clientInfo.ref_month, clientInfo.ref_discount);
+            if (!check.valid) {
+                // Expired: enter app but show suspension overlay
+                document.getElementById('login-screen').style.display = 'none';
+                showLauncher();
+                showSuspendedOverlay(currentLoginCedula, clientInfo.ref_discount || false);
+            } else {
+                resetInactivity();
+                startInactivityMonitor();
+                updateSubUI(check.days);
+                
+                if (clientInfo.ref_code) {
+                    updateReferralUI(clientInfo.ref_code, clientInfo.ref_total, clientInfo.ref_month, clientInfo.ref_discount);
+                }
+                
+                document.getElementById('login-screen').style.display = 'none';
+                showLauncher();
             }
-            
-            document.getElementById('login-screen').style.display = 'none';
-            showLauncher();
         } else {
             errorMsg.style.display = 'block';
             errorMsg.innerText = 'Contraseña incorrecta.';
