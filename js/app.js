@@ -151,10 +151,10 @@ function _modeKey() {
 // ── App type config ───────────────────────────────────────────────────────
 const APP_CONFIGS = {
     tradicional: {
-        modes:       ['lotto', 'granja', 'selva'],
-        modeLabels:  { lotto: '&#127922; Lotto', granja: '&#128004; Granja', selva: '&#127796; Selva' },
+        modes:       ['lotto', 'granja', 'selva', 'internacional'],
+        modeLabels:  { lotto: '&#127922; Lotto', granja: '&#128004; Granja', selva: '&#127796; Selva', internacional: '&#127758; Internacional' },
         defaultMode: 'lotto',
-        modeClass:   { lotto: 'mode-lotto', granja: 'mode-granja', selva: 'mode-selva' }
+        modeClass:   { lotto: 'mode-lotto', granja: 'mode-granja', selva: 'mode-selva', internacional: 'mode-internacional' }
     },
     extendida: {
         modes:       ['monje', 'guacharo'],
@@ -1099,10 +1099,14 @@ function generateInputGrid() {
     });
 }
 
+function getHourSuffix() {
+    return currentMode === 'internacional' ? ':30' : ':00';
+}
+
 function formatTime(hour) {
     const h = hour > 12 ? hour - 12 : hour;
     const ampm = hour >= 12 ? 'PM' : 'AM';
-    return `${h}:00 ${ampm}`;
+    return `${h}${getHourSuffix()} ${ampm}`;
 }
 
 function validateInput(input) {
@@ -3586,7 +3590,7 @@ function _ganSetAmount(h,num,amount) {
 }
 
 function _ganFmt(v){ return v===0?'0':Math.abs(v).toLocaleString('es-VE',{minimumFractionDigits:0,maximumFractionDigits:2}); }
-function _ganFmtHour(h){ var n=parseInt(h); return n<12?n+' AM':n===12?'12 PM':(n-12)+' PM'; }
+function _ganFmtHour(h){ var n=parseInt(h); return n<12?n+getHourSuffix()+' AM':n===12?'12'+getHourSuffix()+' PM':(n-12)+getHourSuffix()+' PM'; }
 
 
 
@@ -4344,6 +4348,7 @@ function renderCrucesEnNFuerte(dayData) {
             if (to === 'lotto') { badgeBg = 'rgba(239,68,68,0.1)'; badgeText = '#ef4444'; badgeBorder = 'rgba(239,68,68,0.2)'; }
             else if (to === 'granja') { badgeBg = 'rgba(16,185,129,0.1)'; badgeText = '#10b981'; badgeBorder = 'rgba(16,185,129,0.2)'; }
             else if (to === 'selva') { badgeBg = 'rgba(245,158,11,0.1)'; badgeText = '#f59e0b'; badgeBorder = 'rgba(245,158,11,0.2)'; }
+            else if (to === 'internacional') { badgeBg = 'rgba(6,182,212,0.1)'; badgeText = '#06b6d4'; badgeBorder = 'rgba(6,182,212,0.2)'; }
             else { badgeBg = 'rgba(59,130,246,0.1)'; badgeText = '#3b82f6'; badgeBorder = 'rgba(59,130,246,0.2)'; }
 
             // Destacar la ruta principal
