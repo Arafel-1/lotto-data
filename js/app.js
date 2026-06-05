@@ -508,7 +508,7 @@ function updateReferralUI(refCode, refTotal, refMonth, refDiscount) {
     }
     
     // Fetch BCV
-    fetch('https://web-production-480f.up.railway.app/api/public/bcv-rate')
+    fetch(`data/bcv_rate.json?v=${new Date().getTime()}`)
         .then(res => res.json())
         .then(data => {
             if (data.status === 'ok') {
