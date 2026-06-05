@@ -2697,6 +2697,7 @@ function switchMode(newMode) {
         cachedPatterns = null; // Invalidate patterns cache
 
         // Refresh all UI
+        generateInputGrid();
         loadDayData(currentDate);
         renderHistory();
 
