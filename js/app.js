@@ -797,8 +797,11 @@ async function validateLoginStep1() {
         const clientInfo = clientsData[hashHex];
         
         if (clientInfo) {
-            // Save cedula for suspended overlay use
+            // Save cedula and exp for suspended overlay and instant login use
             localStorage.setItem('session_cedula', cedulaInput);
+            window._currentLoginExp = clientInfo.exp;
+            window._currentLoginRefDiscount = clientInfo.ref_discount || false;
+            window._currentLoginPaymentStatus = clientInfo.payment_status || '';
             const check = validateExpiration(clientInfo.exp);
             if (clientInfo.pwd) {
                 showLoginView('password');
@@ -906,7 +909,23 @@ async function submitCreatePassword() {
         
         let data = await res.json();
         if (data.status === 'success') {
-            showLoginView('wait');
+            // Iniciar sesión inmediatamente
+            localStorage.setItem('session_hash', currentLoginHash);
+            localStorage.setItem('session_exp_date', window._currentLoginExp);
+            localStorage.setItem('session_cedula', currentLoginCedula);
+            
+            document.getElementById('login-screen').style.display = 'none';
+            showLauncher();
+            
+            const check = validateExpiration(window._currentLoginExp);
+            if (!check.valid) {
+                showSuspendedOverlay(currentLoginCedula, window._currentLoginRefDiscount, window._currentLoginPaymentStatus);
+            } else {
+                localStorage.removeItem('suspension_payment_status');
+                resetInactivity();
+                startInactivityMonitor();
+                updateSubUI(check.days);
+            }
         } else {
             errorMsg.style.display = 'block';
             errorMsg.innerText = data.message || 'Error al guardar la contraseña.';
@@ -948,7 +967,24 @@ async function submitRegister() {
         
         let data = await res.json();
         if (data.status === 'success') {
-            showLoginView('wait');
+            // Iniciar sesión inmediatamente
+            const encoder = new TextEncoder();
+            const cedulaData = encoder.encode(cedula);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', cedulaData);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            localStorage.setItem('session_hash', hashHex);
+            localStorage.setItem('session_exp_date', data.new_exp || '');
+            localStorage.setItem('session_cedula', cedula);
+
+            document.getElementById('login-screen').style.display = 'none';
+            showLauncher();
+            
+            localStorage.removeItem('suspension_payment_status');
+            resetInactivity();
+            startInactivityMonitor();
+            updateSubUI(7); // 7 días de prueba
         } else {
             errorMsg.style.display = 'block';
             errorMsg.innerText = data.message || 'Error al registrarse.';
